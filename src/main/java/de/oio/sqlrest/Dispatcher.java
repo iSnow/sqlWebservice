@@ -119,7 +119,8 @@ public class Dispatcher {
 		}
 
 		try {
-			responseBuilder.generate();
+			if (null != responseBuilder)
+				responseBuilder.generate();
 		} catch (Exception e) {
 			System.err.println("Can't delete " + e);
 			response.sendError(HttpServletResponse.SC_FORBIDDEN, "Resource could not be deleted");
@@ -152,7 +153,8 @@ public class Dispatcher {
 		}
 
 		try {
-			responseBuilder.generate();
+			if (null != responseBuilder)
+				responseBuilder.generate();
 		} catch (Exception e) {
 			System.err.println("Can't create process POST request " + e);
 			e.printStackTrace();
@@ -188,7 +190,8 @@ public class Dispatcher {
 
 		try {
 			log.debug("Builder: " + responseBuilder);
-			responseBuilder.generate();
+			if (null != responseBuilder)
+				responseBuilder.generate();
 		} catch (Exception e) {
 			System.err.println("Can't process PUT request " + e);
 			e.printStackTrace();
