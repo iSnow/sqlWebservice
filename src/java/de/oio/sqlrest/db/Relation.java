@@ -33,10 +33,13 @@
 
 package de.oio.sqlrest.db;
 
+import lombok.Getter;
+
 /**
  * @author tbayer
  *
  */
+@Getter
 public class Relation {
 
 	private String pkTableName, pkColumnName, fkTableName, fkColumnName, fkName;
@@ -48,40 +51,5 @@ public class Relation {
 		fkColumnName = aFkColumnName;
 		fkName = aFkName;
 	}
-	/**
-	 * Method getFkColumnName.
-	 * @return Object
-	 */
-	public String getFkColumnName() {
-		return fkColumnName;
-	}
-
-	/**
-	 * @return
-	 */
-	public String getFkName() {
-		return fkName;
-	}
-
-	/**
-	 * @return
-	 */
-	public String getFkTableName() {
-		return fkTableName;
-	}
-
-	/**
-	 * @return
-	 */
-	public String getPkTableName() {
-		return pkTableName;
-	}
-
-	/**
-	 * @return
-	 */
-	public String getPkColumnName() {
-		return pkColumnName;
-	}
-
+	
 }

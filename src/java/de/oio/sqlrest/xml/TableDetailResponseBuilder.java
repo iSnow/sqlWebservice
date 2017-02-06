@@ -42,7 +42,6 @@ import javax.servlet.http.HttpServletResponse;
 import de.oio.sqlrest.db.Column;
 import de.oio.sqlrest.db.DatabaseInfo;
 import de.oio.sqlrest.db.DatabaseUtil;
-import de.oio.sqlrest.db.Relation;
 import de.oio.sqlrest.db.Row;
 import de.oio.sqlrest.http.HttpUtil;
 import de.oio.sqlrest.rest.RestUtil;
@@ -69,33 +68,37 @@ public class TableDetailResponseBuilder extends AbstractResponseBuilder {
 	/**
 	 * @see de.oio.sqlrest.xml.ResponseBuilder#generate()
 	 */
+	@Override
 	public void generate() throws Exception {
 		
 		start(getTableName());
 		
-		Iterator iter = DatabaseUtil.getTableDetails( getTableName(), getPrimaryKey()).iterator();
+		Iterator<Row> iter = DatabaseUtil.getTableDetails( getTableName(), getPrimaryKey()).iterator();
 		
 		checkIfThereAreMatches(iter);
 		
 		while (iter.hasNext()) {
-			Row row = (Row) iter.next();
+			Row row = iter.next();
 			
-			Iterator columnIter = row.getColumns().iterator();
+			Iterator<Column> columnIter = row.getColumns().iterator();
 			
 			while (columnIter.hasNext()) {
-				Column column = (Column) columnIter.next();
+				Column column = columnIter.next();
 				
-				if ( databaseInfo.getTableInfo( getTableName()).isFkColumn(column.getName())) {
+				if ( databaseInfo
+						.getTableInfo( getTableName())
+						.isFkColumn(column.getName())) {
 					
 					serializer.startElement( "",
-					column.getName(), column.getName(), 
-					new HRefAttr(
-						RestUtil.getRowUrl(HttpUtil.getServletUrl(request), getPkTableNameFromRelation(column), column.content)));
+						column.getName(), column.getName(), 
+						new HRefAttr(
+							RestUtil.getRowUrl(HttpUtil.getServletUrl(request), getPkTableNameFromRelation(column), column.getContent()))
+						);
 				} else  {
 					serializer.startElement( column.getName(), null);
 				}
 				
-				text( column.content);
+				text( column.getContent());
 				serializer.endElement( column.getName());	
 			}
 			
@@ -105,10 +108,10 @@ public class TableDetailResponseBuilder extends AbstractResponseBuilder {
 	}
 
 	private String getPkTableNameFromRelation(Column column) {
-		return ((Relation)databaseInfo.getTableInfo( getTableName()).getRelation(column.getName())).getPkTableName();
+		return databaseInfo.getTableInfo( getTableName()).getRelation(column.getName()).getPkTableName();
 	}
 
-	private void checkIfThereAreMatches(Iterator iter) throws IOException {
+	private void checkIfThereAreMatches(Iterator<Row> iter) throws IOException {
 		if (!iter.hasNext()) {			
 			response.sendError( HttpServletResponse.SC_NOT_FOUND, "Resource not found");
 		}

@@ -33,14 +33,16 @@
 
 package de.oio.sqlrest.db;
 
+import lombok.Data;
+
 /**
  * @author tbayer
  *
  */
+@Data
 public class Column {
 
-	public String content;
-
+	private String content;
 	private String name;
 	private int type, size;
 	private boolean primaryKey;
@@ -54,69 +56,6 @@ public class Column {
 		this.name = name;
 		this.type = type;
 		this.size = size;
-	}
-	/**
-	 * Returns the content.
-	 * @return String
-	 */
-	public String getContent() {
-		return content;
-	}
-
-	/**
-	 * Returns the name.
-	 * @return String
-	 */
-	public String getName() {
-		return name;
-	}
-
-	/**
-	 * Returns the primaryKey.
-	 * @return boolean
-	 */
-	public boolean isPrimaryKey() {
-		return primaryKey;
-	}
-
-	/**
-	 * Returns the type.
-	 * @return int
-	 */
-	public int getType() {
-		return type;
-	}
-
-	/**
-	 * Sets the content.
-	 * @param content The content to set
-	 */
-	public void setContent(String content) {
-		this.content = content;
-	}
-
-	/**
-	 * Sets the name.
-	 * @param name The name to set
-	 */
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	/**
-	 * Sets the primaryKey.
-	 * @param primaryKey The primaryKey to set
-	 */
-	public void setPrimaryKey(boolean primaryKey) {
-		this.primaryKey = primaryKey;
-	}
-
-	/**
-	 * Sets the type.
-	 * @param type The type to set
-	 */
-	public void setType(int type) {
-		this.type = type;
 	}
 
 }

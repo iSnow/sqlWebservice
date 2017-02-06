@@ -56,14 +56,16 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class MainServlet extends HttpServlet {
-	
+	private static final long serialVersionUID = -5810016872810316505L;
 	public DatabaseInfo databaseInfo;
 
 	/**
 	 * @see javax.servlet.http.HttpServlet#doGet(HttpServletRequest, HttpServletResponse)
 	 */
 	@Override
-	public void doGet(HttpServletRequest request, HttpServletResponse response)
+	public void doGet(
+			HttpServletRequest request, 
+			HttpServletResponse response)
 		throws ServletException, IOException {		
 
 		logRequest(request);
@@ -75,14 +77,6 @@ public class MainServlet extends HttpServlet {
 			throw new ServletException("Error: " + e);
 		}
 
-	}
-
-	/**
-	 * @param request
-	 */
-	private void logRequest(HttpServletRequest request) {
-		log.info("Request Info: Host: " + request.getRemoteHost() + "  Method: " +request.getMethod());
-		log.info("URL: " + request.getRequestURL());
 	}
 
 	/**
@@ -122,8 +116,36 @@ public class MainServlet extends HttpServlet {
 			e.printStackTrace();
 			throw new ServletException("Error: " + e);
 		}
-
 	}
+
+	/**
+	 * @param request
+	 */
+	private void logRequest(HttpServletRequest request) {
+		log.info("Request Info: Host: " + request.getRemoteHost() + "  Method: " +request.getMethod());
+		log.info("URL: " + request.getRequestURL());
+	}
+
+
+	/**
+	 * @see javax.servlet.http.HttpServlet#doPut(HttpServletRequest, HttpServletResponse)
+	 */
+	@Override
+	protected void doPut(
+		HttpServletRequest request,
+		HttpServletResponse response)
+		throws ServletException, IOException {
+
+		logRequest(request);
+
+		try {
+			Dispatcher.dispatchPUT(request, response, databaseInfo);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new ServletException("Error: " + e);
+		}
+	}
+
 
 	/**
 	 * @see javax.servlet.GenericServlet#init()
@@ -131,6 +153,10 @@ public class MainServlet extends HttpServlet {
 	@Override
 	public void init() throws ServletException {
 		super.init();
+		File conf = new File(getServletContext().getRealPath("/WEB-INF/sqlrestconf.xml"));
+		if (!conf.exists()) {
+			throw new RuntimeException ("Configuration file /WEB-INF/sqlrestconf.xml is missing!");
+		}
 
 /*		InputSource source =
 			new InputSource(
@@ -140,7 +166,7 @@ public class MainServlet extends HttpServlet {
 			SAXParser parser = factory.newSAXParser();
 			RESTRequestHandler handler = new RESTRequestHandler();
 			//parser.parse(source, handler);
-			parser.parse(new File(getServletContext().getRealPath("/WEB-INF/sqlrestconf.xml")), handler);
+			parser.parse(conf, handler);
 			Map<String, String> valuePairs = handler.getValuePairs();
 
 			RestUtil.xslt = valuePairs.get("xslt");
@@ -189,25 +215,6 @@ public class MainServlet extends HttpServlet {
 	 * Method getPrimaryKey.
 	 */
 	private void getPrimaryKey() {
-	}
-
-	/**
-	 * @see javax.servlet.http.HttpServlet#doPut(HttpServletRequest, HttpServletResponse)
-	 */
-	@Override
-	protected void doPut(
-		HttpServletRequest request,
-		HttpServletResponse response)
-		throws ServletException, IOException {
-
-		logRequest(request);
-
-		try {
-			Dispatcher.dispatchPUT(request, response, databaseInfo);
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new ServletException("Error: " + e);
-		}
 	}
 
 }

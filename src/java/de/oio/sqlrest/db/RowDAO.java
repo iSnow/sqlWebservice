@@ -61,7 +61,7 @@ public class RowDAO {
 **/
 	public static void update(
 		String tableName,
-		Map valuePairs,
+		Map<String, String> valuePairs,
 		DatabaseInfo databaseInfo,
 		String primaryKey)
 		throws SQLException
@@ -71,12 +71,12 @@ public class RowDAO {
 		StringBuffer assignments = new StringBuffer();
 		boolean previousAssignments = false;
 		// copying the set to a list means we can iterate it twice in the same order
-		ArrayList nameList = new ArrayList(valuePairs.keySet());
-		Iterator nameIterator= nameList.iterator();
+		ArrayList<String> nameList = new ArrayList<String>(valuePairs.keySet());
+		Iterator<String> nameIterator= nameList.iterator();
 		String elementName;
 		// remember the name of the primary key column so we can avoid inserting null values in that column
 		while (nameIterator.hasNext()) {
-			elementName = (String) nameIterator.next();
+			elementName = nameIterator.next();
 			if (databaseInfo.getTableInfo(tableName).hasColumn(elementName)) {
 				Column column = databaseInfo.getTableInfo(tableName).getColumn(elementName);
 				if (!column.isPrimaryKey()) { // don't update the primary key
@@ -112,13 +112,13 @@ public class RowDAO {
 		nameIterator= nameList.iterator();
 		int i=0;
 		while (nameIterator.hasNext()) {
-			elementName = (String) nameIterator.next();
+			elementName = nameIterator.next();
 			if (databaseInfo.getTableInfo(tableName).hasColumn(elementName)) {
 				Column column = databaseInfo.getTableInfo(tableName).getColumn(elementName);
 				if (!column.isPrimaryKey()) { // don't update the primary key
 					// add parameter value to query
 					i++;
-					String value = (String) valuePairs.get(elementName);
+					String value = valuePairs.get(elementName);
 					int type = column.getType();
 					log.info("Adding element " + elementName + " with type=" + String.valueOf(type) + " and value={" + value + "}");
 					setParameterValue(statement, i, type, value);
@@ -176,22 +176,22 @@ public class RowDAO {
 	 * @param databaseInfo
 	 * @param primaryKey String value of the primary key if provided. 
 	 *	 */
-	public static void insert(String tableName, Map valuePairs, DatabaseInfo databaseInfo, String primaryKey)
+	public static void insert(String tableName, Map<String, String> valuePairs, DatabaseInfo databaseInfo, String primaryKey)
 		throws SQLException {
 		// construct a string of column names from valuePairs e.g. "foo, bar, baz"
 		StringBuffer columnList = new StringBuffer();
 		StringBuffer parameterList = new StringBuffer();
 		boolean previousAssignments = false;
 		// copying the set to a list means we can iterate it twice in the same order
-		ArrayList nameList = new ArrayList(valuePairs.keySet());
-		Iterator nameIterator= nameList.iterator();
+		ArrayList<String> nameList = new ArrayList<String>(valuePairs.keySet());
+		Iterator<String> nameIterator= nameList.iterator();
 		String elementName;
 
 		// remember the name of the primary key column so we can avoid inserting null values in that column
 		String primaryKeyColumnName = databaseInfo.getTableInfo(tableName).getPkColumnName();
 
 		while (nameIterator.hasNext()) {
-			elementName = (String) nameIterator.next();
+			elementName = nameIterator.next();
 
 			if (databaseInfo.getTableInfo(tableName).hasColumn(elementName)) { 
 				// only attempt to update a column if it actually exists in the table
@@ -228,14 +228,14 @@ public class RowDAO {
 		nameIterator= nameList.iterator();
 		int i=0;
 		while (nameIterator.hasNext()) {
-			elementName = (String) nameIterator.next();
+			elementName = nameIterator.next();
 			if (databaseInfo.getTableInfo(tableName).hasColumn(elementName)) {
 				Column column = databaseInfo.getTableInfo(tableName).getColumn(elementName);
 				// don't insert a null into the primary key column
 				if (!elementName.equalsIgnoreCase(primaryKeyColumnName) || !isPrimaryKeyProvided(primaryKey) ) {
 					// add parameter value to query
 					i++;
-					String value = (String) valuePairs.get(elementName);
+					String value = valuePairs.get(elementName);
 					int type = column.getType();
 					log.info("Adding element " + elementName + " with type=" + String.valueOf(type) + " and value={" + value + "}");
 					setParameterValue(statement, i, type, value);

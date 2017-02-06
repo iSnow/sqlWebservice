@@ -38,7 +38,6 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
-import java.util.Iterator;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -56,20 +55,15 @@ public class DatabaseAnalyser {
 	public static DatabaseInfo getDatabaseInfo() {
 
 		DatabaseInfo databaseInfo = new DatabaseInfo();
-
-		Iterator tablesIterator = DatabaseUtil.getTableNames().iterator();
-
-		while (tablesIterator.hasNext()) {
-			String tableName = (String) tablesIterator.next();
+		for (String tableName : DatabaseUtil.getTableNames()) {
 			
 			log.debug("Anaylser TableName: " + tableName);
-			
 			TableInfo tableInfo = new TableInfo(tableName);
 
-			retrivePrimaryKey(tableName, tableInfo);
-			retriveRelations(tableName, tableInfo);
+			retrievePrimaryKey(tableName, tableInfo);
+			retrieveRelations(tableName, tableInfo);
 			
-			retriveColumns(tableName, tableInfo);
+			retrieveColumns(tableName, tableInfo);
 			
 			Column column = tableInfo.getColumn( tableInfo.getPkColumnName());
 			column.setPrimaryKey( true);
@@ -80,27 +74,19 @@ public class DatabaseAnalyser {
 		return databaseInfo;
 	}
 
-	public static void retriveColumns(String tableName, TableInfo tableInfo) {
-		
-		Collection columns = DatabaseUtil.getColumnsMetaData( tableName);
-		
-		Iterator columsIter = columns.iterator();
-		
-		while (columsIter.hasNext()) {
-			Column column = (Column) columsIter.next();			
-			
-			tableInfo.add( column);
-		}
+	public static void retrieveColumns(String tableName, TableInfo tableInfo) {
+		Collection<Column> columns = DatabaseUtil.getColumnsMetaData(tableName);
+		tableInfo.add(columns);
 	}
 
-	public static void retrivePrimaryKey(String tableName, TableInfo tableInfo) {
+	public static void retrievePrimaryKey(String tableName, TableInfo tableInfo) {
 		tableInfo.setPkColumnName(DatabaseUtil.getPrimaryKeyColumnName(tableName));
 
 		tableInfo.setPkColumnType(
 			DatabaseUtil.getColumnType(tableName, tableInfo.getPkColumnName()));
 	}
 
-	private static void retriveRelations(String tableName, TableInfo tableInfo) {
+	private static void retrieveRelations(String tableName, TableInfo tableInfo) {
 		try {
 			Connection connection = DBConnection.getInstance();
 

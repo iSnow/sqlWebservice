@@ -59,57 +59,47 @@ public class DatabaseUtil {
 	 * 
 	 * @return Collection containing Strings with the names of the database Catalogs.
 	 */
-	public static Collection getCatalogs() {
-
-		ArrayList catalogs = new ArrayList();
+	public static Collection<String> getCatalogs() {
+		ArrayList<String> catalogs = new ArrayList<>();
 
 		try {
-
 			Connection connection = DBConnection.getInstance();
-
 			ResultSet resultSet = connection.getMetaData().getCatalogs();
-
 			while (resultSet.next()) {
 				catalogs.add(resultSet.getString("TABLE_CAT"));
 			}
-
 			connection.close();
 
 		} catch (SQLException e) {
-			e.printStackTrace(System.err);
+			throw new RuntimeException(e);
 		}
 
 		return catalogs;
 
 	}
 
-	public static Collection getTableNames() {
-
-		ArrayList tables = new ArrayList();
-
+	/**
+	 * Returns the names of all tables in the DB schema
+	 * by querying the DB metadata
+	 * @return Collection of strings
+	 */
+	public static Collection<String> getTableNames() {
+		ArrayList<String> tables = new ArrayList<>();
 		try {
-
 			Connection connection = DBConnection.getInstance();
-
 			log.debug("GetTableNames ! Start");
-
 			ResultSet resultSet = connection.getMetaData().getTables(null, null, null, new String[] { "TABLE" });
-
 			log.debug("GetTableNames !");
 
 			while (resultSet.next()) {
-
 				log.debug("GetTableNames ! inside");
-
 				tables.add(resultSet.getString("TABLE_NAME"));
 			}
 
 			connection.close();
-
 		} catch (SQLException e) {
-			e.printStackTrace(System.err);
+			throw new RuntimeException(e);
 		}
-
 		return tables;
 
 	}
@@ -118,26 +108,21 @@ public class DatabaseUtil {
 	 * Method getTable.
 	 * @param tableName
 	 */
-	public static Collection getPrimaryKeyValuesFromTable(String tableName) {
+	public static Collection<String> getPrimaryKeyValuesFromTable(String tableName) {
 
-		ArrayList ids = new ArrayList();
+		ArrayList<String> ids = new ArrayList<>();
 
 		try {
-
 			Connection connection = DBConnection.getInstance();
-
 			ResultSet resultSet = connection.prepareStatement(getPrimaryKeyValuesSelectStatement(tableName)).executeQuery();
-
 			String pkColumnName = getPrimaryKeyColumnName(tableName);
-
 			while (resultSet.next()) {
 				ids.add(resultSet.getString(pkColumnName));
 			}
 
 			connection.close();
-
 		} catch (SQLException e) {
-			e.printStackTrace(System.err);
+			throw new RuntimeException(e);
 		}
 
 		return ids;
@@ -153,8 +138,8 @@ public class DatabaseUtil {
 	 * @param string
 	 * @param i
 	 */
-	public static ArrayList getTableDetails(String tableName, String id) {
-		ArrayList ids = new ArrayList();
+	public static ArrayList<Row> getTableDetails(String tableName, String id) {
+		ArrayList<Row> ids = new ArrayList<>();
 
 		try {
 
@@ -170,7 +155,6 @@ public class DatabaseUtil {
 
 			while (resultSet.next()) {
 				Row row = new Row();
-				String erg = "";
 				for (int i = 1; i <= columnCount; i++) {
 					row.add(new Column(rsMetaData.getColumnName(i), resultSet.getString(i)));
 				}
@@ -306,16 +290,13 @@ public class DatabaseUtil {
 	 * @param tableName
 	 * @return Collection
 	 */
-	public static Collection getColumnsMetaData(String tableName) {
-		
-		ArrayList columns = new ArrayList();
+	public static Collection<Column> getColumnsMetaData(String tableName) {
+		ArrayList<Column> columns = new ArrayList<>();
 
 		try {
 
 			Connection connection = DBConnection.getInstance();
-
 			DatabaseMetaData dbMetaData = connection.getMetaData();
-			
 			ResultSet rs = dbMetaData.getColumns( null, null, tableName, null);
 
 			while( rs.next()) {				
@@ -325,7 +306,7 @@ public class DatabaseUtil {
 			connection.close();
 
 		} catch (SQLException e) {
-			e.printStackTrace(System.err);
+			throw new RuntimeException(e);
 		}
 
 		return columns;		

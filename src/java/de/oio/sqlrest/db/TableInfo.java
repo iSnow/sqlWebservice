@@ -33,7 +33,9 @@
 
 package de.oio.sqlrest.db;
 
-import java.util.Hashtable;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -45,9 +47,9 @@ public class TableInfo {
 	private String tableName;
 	private String pkColumnName;
 	private int pkColumnType;
-	private Hashtable relations = new Hashtable();
+	private Map<String, Relation> relations = new HashMap<>();
 
-	private Hashtable columns = new Hashtable();
+	private Map<String, Column> columns = new HashMap<>();
 
 	public TableInfo(String aTableName) {
 		tableName = aTableName;
@@ -62,7 +64,7 @@ public class TableInfo {
 	}
 
 	public Relation getRelation( String fkColumnName) {
-		return (Relation) relations.get( fkColumnName);
+		return relations.get( fkColumnName);
 	}
 
 	/**
@@ -109,11 +111,17 @@ public class TableInfo {
 		this.pkColumnName = pkColumnName;
 	}
 
-	public void add( Column column) {
-		columns.put( column.getName(), column);
+	public void add(Column column) {
+		columns.put (column.getName(), column);
 	}	
+	
+	public void add(Collection<Column> cols) {
+		for (Column col : cols) {
+			add(col);
+		}
+	}
 
-	public Set getColumnNames() {
+	public Set<String> getColumnNames() {
 		return columns.keySet();
 	}
 	
@@ -122,6 +130,6 @@ public class TableInfo {
 	}
 	
 	public Column getColumn( String columnName) {
-		return (Column) columns.get( columnName);
+		return columns.get( columnName);
 	}
 }

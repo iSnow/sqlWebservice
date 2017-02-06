@@ -37,11 +37,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import de.oio.sqlrest.db.DatabaseInfo;
+import lombok.Getter;
 
 /**
  * @author tbayer
  *
  */
+@Getter
 public class SQLRestContext {
 
 	private HttpServletRequest request;
@@ -53,29 +55,4 @@ public class SQLRestContext {
 		this.response = response;
 		this.databaseInfo = databaseInfo;
 	}
-
-	/**
-	 * Returns the databaseInfo.
-	 * @return DatabaseInfo
-	 */
-	public DatabaseInfo getDatabaseInfo() {
-		return databaseInfo;
-	}
-
-	/**
-	 * Returns the request.
-	 * @return HttpServletRequest
-	 */
-	public HttpServletRequest getRequest() {
-		return request;
-	}
-
-	/**
-	 * Returns the response.
-	 * @return HttpServletResponse
-	 */
-	public HttpServletResponse getResponse() {
-		return response;
-	}
-
 }

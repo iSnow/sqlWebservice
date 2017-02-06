@@ -33,8 +33,9 @@
 
 package de.oio.sqlrest.db;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Vector;
+import java.util.List;
 
 /**
  * @author tbayer
@@ -42,7 +43,7 @@ import java.util.Vector;
  */
 public class Row {
 
-	private Vector columns = new Vector();
+	private List<Column> columns = new ArrayList<>();
 
 	/**
 	 * Method add.
@@ -52,7 +53,7 @@ public class Row {
 		columns.add( column);
 	}
 	
-	public Collection getColumns() {
+	public Collection<Column> getColumns() {
 		return columns;
 	}
 

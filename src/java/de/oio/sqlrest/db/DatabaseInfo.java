@@ -33,7 +33,8 @@
 
 package de.oio.sqlrest.db;
 
-import java.util.Hashtable;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author tbayer
@@ -41,7 +42,7 @@ import java.util.Hashtable;
  */
 public class DatabaseInfo {
 
-	private Hashtable tableInfos = new Hashtable();
+	private Map<String, TableInfo> tableInfos = new HashMap<>();
 	
 	/**
 	 * Method add.
@@ -52,7 +53,7 @@ public class DatabaseInfo {
 	}
 
 	public TableInfo getTableInfo( String tableName) {
-		return (TableInfo) tableInfos.get( tableName);
+		return tableInfos.get( tableName);
 	}
 	
 }

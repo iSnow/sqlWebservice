@@ -75,6 +75,7 @@ public class ModifyEntityHandler extends AbstractResponseBuilder {
 	/**
 	 * @see de.oio.sqlrest.xml.ResponseBuilder#generate()
 	 */
+	@Override
 	public void generate() throws Exception {
 		InputSource source = new InputSource(request.getInputStream());
 
@@ -85,7 +86,7 @@ public class ModifyEntityHandler extends AbstractResponseBuilder {
 			RESTRequestHandler handler = new RESTRequestHandler();
 			parser.parse(source, handler);
 
-			Map valuePairs = handler.getValuePairs();
+			Map<String, String> valuePairs = handler.getValuePairs();
 
 			RowDAO.update( getTableName(), valuePairs, databaseInfo, getPrimaryKey());
 			
