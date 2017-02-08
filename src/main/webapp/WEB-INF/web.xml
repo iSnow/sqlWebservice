@@ -1,24 +1,86 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<web-app 
-	id="WebApp_ID" 
-	version="3.1" 
-	xmlns="http://xmlns.jcp.org/xml/ns/javaee" 
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+<web-app id="WebApp_ID" version="3.1"
+	xmlns="http://xmlns.jcp.org/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd">
 
 	<display-name>sqlws</display-name>
-	         
+
 	<servlet>
-		<servlet-name>sqlrest</servlet-name>
-		<servlet-class>de.oio.sqlrest.MainServlet</servlet-class>
+		<servlet-name>jersey-servlet</servlet-name>
+		<servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
+		<init-param>
+			<param-name>javax.ws.rs.Application</param-name>
+			<param-value>de.isnow.sqlws.SqlWebserviceApplication</param-value>
+		</init-param>
+		<init-param>
+			<param-name>jersey.config.server.provider.packages</param-name>
+			<param-value>io.swagger.jaxrs.listing, 
+				de.isnow.sqlws.rest</param-value>
+		</init-param>
+		<init-param>
+			<param-name>jersey.config.server.wadl.disableWadl</param-name>
+			<param-value>true</param-value>
+		</init-param>
+		<init-param>
+			<param-name>com.fasterxml.jackson.jaxrs</param-name>
+			<param-value>de.isnow.sqlws.rest</param-value>
+		</init-param>
+		<init-param>
+			<param-name>jersey.config.server.tracing.type</param-name>
+			<param-value>ALL</param-value>
+		</init-param>
+		<init-param>
+			<param-name>jersey.config.server.tracing.threshold</param-name>
+			<param-value>VERBOSE</param-value>
+		</init-param>
 		<load-on-startup>1</load-on-startup>
 	</servlet>
-	 
+
+
 	<servlet-mapping>
-		<servlet-name>sqlrest</servlet-name>
-		<url-pattern>/</url-pattern>
+		<servlet-name>jersey-servlet</servlet-name>
+		<url-pattern>/v2/*</url-pattern>
 	</servlet-mapping>
-	 
+
+
+	<servlet>
+		<servlet-name>sqlrest-servlet</servlet-name>
+		<servlet-class>de.oio.sqlrest.MainServlet</servlet-class>
+		<load-on-startup>2</load-on-startup>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>sqlrest-servlet</servlet-name>
+		<url-pattern>/v1/*</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>swagger-jersey-servlet</servlet-name>
+		<servlet-class>io.swagger.jersey.config.JerseyJaxrsConfig</servlet-class>
+		<init-param>
+			<param-name>api.version</param-name>
+			<param-value>1.0.0</param-value>
+		</init-param>
+		<init-param>
+			<param-name>api.title</param-name>
+			<param-value>sqlWebservice</param-value>
+		</init-param>
+		<init-param>
+			<param-name>swagger.api.basepath</param-name>
+			<param-value>/api-docs</param-value>
+		</init-param>
+		<init-param>
+			<param-name>jersey.config.server.tracing.type</param-name>
+			<param-value>ALL</param-value>
+		</init-param>
+		<init-param>
+			<param-name>scan.all.resources</param-name>
+			<param-value>true</param-value>
+		</init-param>
+
+		<load-on-startup>3</load-on-startup>
+	</servlet>
+
 	<welcome-file-list>
 		<welcome-file>index.html</welcome-file>
 	</welcome-file-list>
