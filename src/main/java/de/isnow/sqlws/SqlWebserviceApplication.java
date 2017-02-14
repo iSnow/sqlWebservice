@@ -1,15 +1,14 @@
 package de.isnow.sqlws;
 
 import java.io.File;
-import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.ServletContext;
 import javax.ws.rs.core.Context;
 
+import org.glassfish.jersey.linking.DeclarativeLinkingFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 
-import de.isnow.sqlws.model.DBConnection;
 import de.isnow.sqlws.util.RestUtil;
 import de.isnow.sqlws.util.XmlConfigUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -20,12 +19,13 @@ public class SqlWebserviceApplication extends ResourceConfig {
 	@Context
 	ServletContext ctx;
 	
-	public static Map<String, DBConnection> activeConnections = new HashMap<>();
 
 	public SqlWebserviceApplication(@Context ServletContext servletContext) {
 		this.ctx = servletContext;
 		log.info("ResourceConfig Application init");
 		log.info(ctx.toString());
+	    packages("de.isnow.sqlws;de.isnow.sqlws.model;de.isnow.sqlws.rest;org.glassfish.jersey.linking").register(DeclarativeLinkingFeature.class);
+	       
 		File path = new File(ctx.getRealPath("/"));
 		ctx.setAttribute("warpath", path);
 		init();
@@ -41,7 +41,6 @@ public class SqlWebserviceApplication extends ResourceConfig {
 		Map<String, String> valuePairs = XmlConfigUtil.readConfig(path);
 		RestUtil.takeValuesFromConfig(valuePairs);
 
-
 		try {
 			Class.forName(valuePairs.get("jdbc-driver-class"));
 		} catch (ClassNotFoundException e) {
@@ -49,11 +48,10 @@ public class SqlWebserviceApplication extends ResourceConfig {
 		}
 		System.out.println("test:" + valuePairs);
 		
-		String dbURl = getDatabaseUrl(valuePairs, ctx);
-		DBConnection conn = new DBConnection(dbURl, valuePairs.get("user"), valuePairs.get("password"));
-		activeConnections.put(dbURl, conn);
-
-		//databaseInfo = DatabaseAnalyser.getDatabaseInfo();
+		DbConnectionStore.newConnection(
+			getDatabaseUrl(valuePairs, ctx), 
+			valuePairs.get("user"), 
+			valuePairs.get("password"));
 	}
 
 	/**

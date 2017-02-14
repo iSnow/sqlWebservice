@@ -40,22 +40,37 @@ import lombok.Data;
  *
  */
 @Data
-public class Column {
-
+public class Column implements Comparable<Column> {
+	private Long id;
 	private String content;
 	private String name;
 	private int type, size;
 	private boolean primaryKey;
+	
+	public Column () {
+		id = new Double(Math.random()*1000000).longValue() + System.currentTimeMillis()*1000000;
+	}
 
 	public Column( String aName, String aContent) {
+		this();
 		name = aName;
 		content = aContent;
 	}
 	
 	public Column( String nameIn, int typeIn, int sizeIn) {
+		this();
 		this.name = nameIn;
 		this.type = typeIn;
 		this.size = sizeIn;
+	}
+
+	@Override
+	public int compareTo(Column o) {
+		if (null == o) {
+			return -1;
+		}
+		
+		return id.compareTo(o.id);
 	}
 
 }

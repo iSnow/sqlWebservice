@@ -14,8 +14,11 @@
 		</init-param>
 		<init-param>
 			<param-name>jersey.config.server.provider.packages</param-name>
-			<param-value>io.swagger.jaxrs.listing, 
-				de.isnow.sqlws.rest</param-value>
+			<param-value>
+				io.swagger.jaxrs.listing, 
+				de.isnow.sqlws.rest,
+    			com.fasterxml.jackson.jaxrs.json
+			</param-value>
 		</init-param>
 		<init-param>
 			<param-name>jersey.config.server.wadl.disableWadl</param-name>
@@ -24,6 +27,10 @@
 		<init-param>
 			<param-name>com.fasterxml.jackson.jaxrs</param-name>
 			<param-value>de.isnow.sqlws.rest</param-value>
+		</init-param>
+		<init-param>
+			<param-name>jersey.config.server.provider.classnames</param-name>
+			<param-value>org.glassfish.jersey.linking.DeclarativeLinkingFeature</param-value>
 		</init-param>
 		<init-param>
 			<param-name>jersey.config.server.tracing.type</param-name>

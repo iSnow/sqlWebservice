@@ -1,5 +1,6 @@
 package de.isnow.sqlws.model;
 
+import java.net.URI;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
@@ -9,9 +10,25 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
+import javax.ws.rs.core.Link;
+import javax.xml.bind.annotation.XmlRootElement;
 
+import org.glassfish.jersey.linking.Binding;
+import org.glassfish.jersey.linking.InjectLink;
+import org.glassfish.jersey.linking.InjectLink.Style;
+import org.glassfish.jersey.linking.InjectLinks;
+
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import de.isnow.sqlws.rest.DatabaseService;
+import de.isnow.sqlws.rest.TableService;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -21,30 +38,91 @@ import lombok.extern.slf4j.Slf4j;
  *
  */
 @Slf4j
+@JsonAutoDetect(
+		fieldVisibility = JsonAutoDetect.Visibility.ANY, 
+		getterVisibility = JsonAutoDetect.Visibility.NONE, 
+		setterVisibility = JsonAutoDetect.Visibility.NONE)
+@XmlRootElement
 public class DBConnection {
+	
+	@InjectLink(
+	  		resource = TableService.class, 
+			method="getConnections",  
+			bindings ={
+					@Binding(name = "cid", 
+					value = "{id}")
+				},
+			style =  Style.RELATIVE_PATH)
+    URI uri;
 
+	@InjectLink(
+	  		resource = TableService.class, 
+			method="getConnections",  
+			bindings ={
+					@Binding(name = "cid", 
+					value = "{id}")
+				},
+			style =  Style.RELATIVE_PATH)
+    Link link;
+	
+
+	@InjectLink(
+	  		resource = TableService.class, 
+			method="getConnections",  
+			bindings ={
+					@Binding(name = "cid", 
+					value = "{id}")
+				},
+			style =  Style.RELATIVE_PATH)
+    String relation;
+
+
+    @InjectLinks({
+    	@InjectLink(
+    		resource=DatabaseService.class, 
+    		method="getDbs",
+			bindings ={
+				@Binding(name = "cid", 
+				value = "${instance.id}")
+			},
+    		rel = "self",
+    		style =  Style.RELATIVE_PATH
+    	)
+    })
+    List<Link> links;
+
+    
 	@Getter
 	private Long id;
 
-	private String databaseUrl, user, password;
+	@Getter
+	private String databaseUrl;
 	
 	@Getter
+	private Set<Database> databases = new TreeSet<>();
+	
+	@Getter
+	@JsonIgnore
 	private Connection connection;
 
 	public DBConnection (
 			@NotNull String databaseUrlIn, 
 			@NotNull String userIn, 
 			@NotNull String passwordIn) {
-		 this.databaseUrl = databaseUrlIn;
-		 this.user = userIn;
-		 this.password = passwordIn;
-		 connection = getDbConnection();
-		 id = new Double(Math.random()*1000000).longValue() + System.currentTimeMillis()*1000000;
+		this.databaseUrl = databaseUrlIn;
+		connection = getDbConnection(databaseUrlIn, userIn, passwordIn);
+		id = new Double(Math.random()*1000000).longValue() + System.currentTimeMillis()*1000000;
+		DatabaseAnalyser analyzer = new DatabaseAnalyser(this);
+		Database db = analyzer.createDatabaseInfo();
+		addDatabase(db);
 	}
 	
-	private Connection getDbConnection() {
+	private static Connection getDbConnection(
+			@NotNull String databaseUrl, 
+			@NotNull String user, 
+			@NotNull String password) {
 		try {
-			return DriverManager.getConnection( databaseUrl, user, password);
+			return DriverManager.getConnection (databaseUrl, user, password);
 		} catch (SQLException e) {
 			throw new RuntimeException(e);
 		}
@@ -65,6 +143,15 @@ public class DBConnection {
 		} catch (SQLException e) {
 			throw new RuntimeException(e);
 		}
+	}
+	
+	public Database getDatabase(@NotNull Long dbId) {
+		Database database = databases
+			.stream()
+			.filter(db -> (db.getId().compareTo(dbId) == 0))
+			.collect(Collectors.toList())
+			.get(0);
+		return database;
 	}
 
 	public ArrayList<String> getSchemaNames() {
@@ -169,5 +256,10 @@ public class DBConnection {
 		queryString.append(DatabaseUtil.getSQLParameterSubstring(id, type));
 
 		return queryString.toString();
+	}
+	
+	public void addDatabase(Database db) {
+		this.databases.add(db);
+		db.setOwningConnection(this);
 	}
 }

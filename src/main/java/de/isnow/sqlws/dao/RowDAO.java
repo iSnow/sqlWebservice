@@ -42,7 +42,7 @@ import java.util.Map;
 
 import de.isnow.sqlws.model.Column;
 import de.isnow.sqlws.model.DBConnection;
-import de.isnow.sqlws.model.DatabaseInfo;
+import de.isnow.sqlws.model.Database;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -65,7 +65,7 @@ public class RowDAO {
 	public static void update(
 		String tableName,
 		Map<String, String> valuePairs,
-		DatabaseInfo databaseInfo,
+		Database databaseInfo,
 		String primaryKey,
 		DBConnection connection) {
 		try {
@@ -79,8 +79,8 @@ public class RowDAO {
 			// remember the name of the primary key column so we can avoid inserting null values in that column
 			while (nameIterator.hasNext()) {
 				elementName = nameIterator.next();
-				if (databaseInfo.getTableInfo(tableName).hasColumn(elementName)) {
-					Column column = databaseInfo.getTableInfo(tableName).getColumn(elementName);
+				if (databaseInfo.getTable(tableName).hasColumn(elementName)) {
+					Column column = databaseInfo.getTable(tableName).getColumn(elementName);
 					if (!column.isPrimaryKey()) { // don't update the primary key
 						// add column name and value placeholder to query
 						if (previousAssignments) {
@@ -95,7 +95,7 @@ public class RowDAO {
 			}
 			// create PreparedStatement
 	
-			String primaryKeyColumnName =  databaseInfo.getTableInfo(tableName).getPkColumnName();
+			String primaryKeyColumnName =  databaseInfo.getTable(tableName).getPkColumnName();
 			//String updateStatement = getUpdateStatement(tableName, valuePairs, databaseInfo, assignments.toString(), primaryKey);
 			String updateStatement =  "update "
 				+ tableName
@@ -115,8 +115,8 @@ public class RowDAO {
 			int i=0;
 			while (nameIterator.hasNext()) {
 				elementName = nameIterator.next();
-				if (databaseInfo.getTableInfo(tableName).hasColumn(elementName)) {
-					Column column = databaseInfo.getTableInfo(tableName).getColumn(elementName);
+				if (databaseInfo.getTable(tableName).hasColumn(elementName)) {
+					Column column = databaseInfo.getTable(tableName).getColumn(elementName);
 					if (!column.isPrimaryKey()) { // don't update the primary key
 						// add parameter value to query
 						i++;
@@ -128,7 +128,7 @@ public class RowDAO {
 				}
 			}
 			// specify the value of the primary key for the SQL "where" clause
-			int primaryKeyColumnType = databaseInfo.getTableInfo(tableName).getColumn(primaryKeyColumnName).getType();
+			int primaryKeyColumnType = databaseInfo.getTable(tableName).getColumn(primaryKeyColumnName).getType();
 			setParameterValue(statement, i + 1, primaryKeyColumnType, primaryKey);
 	
 			int rowsAffected = statement.executeUpdate();
@@ -177,7 +177,7 @@ public class RowDAO {
 	public static void insert(
 			String tableName, 
 			Map<String, String> valuePairs, 
-			DatabaseInfo databaseInfo, 
+			Database databaseInfo, 
 			String primaryKey,
 			DBConnection connection)
 		throws SQLException {
@@ -191,14 +191,14 @@ public class RowDAO {
 		String elementName;
 
 		// remember the name of the primary key column so we can avoid inserting null values in that column
-		String primaryKeyColumnName = databaseInfo.getTableInfo(tableName).getPkColumnName();
+		String primaryKeyColumnName = databaseInfo.getTable(tableName).getPkColumnName();
 
 		while (nameIterator.hasNext()) {
 			elementName = nameIterator.next();
 
-			if (databaseInfo.getTableInfo(tableName).hasColumn(elementName)) { 
+			if (databaseInfo.getTable(tableName).hasColumn(elementName)) { 
 				// only attempt to update a column if it actually exists in the table
-				Column column = databaseInfo.getTableInfo(tableName).getColumn(elementName);
+				Column column = databaseInfo.getTable(tableName).getColumn(elementName);
 
 				// check if the element would attempt to insert a null value into a primary key column
 				if (!elementName.equalsIgnoreCase(primaryKeyColumnName) || !isPrimaryKeyProvided(primaryKey) ) {
@@ -232,8 +232,8 @@ public class RowDAO {
 		int i=0;
 		while (nameIterator.hasNext()) {
 			elementName = nameIterator.next();
-			if (databaseInfo.getTableInfo(tableName).hasColumn(elementName)) {
-				Column column = databaseInfo.getTableInfo(tableName).getColumn(elementName);
+			if (databaseInfo.getTable(tableName).hasColumn(elementName)) {
+				Column column = databaseInfo.getTable(tableName).getColumn(elementName);
 				// don't insert a null into the primary key column
 				if (!elementName.equalsIgnoreCase(primaryKeyColumnName) || !isPrimaryKeyProvided(primaryKey) ) {
 					// add parameter value to query

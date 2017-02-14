@@ -135,10 +135,30 @@
 			<version>${jackson-2-version}</version>
 		</dependency>
 
-		<!-- JAX-RS provider -->
+		<dependency>
+    		<groupId>com.fasterxml.jackson.datatype</groupId>
+    		<artifactId>jackson-datatype-jaxrs</artifactId>
+			<version>${jackson-2-version}</version>
+		</dependency>
+
+		<!-- JAX-RS provider for JSON -->
 		<dependency>
 			<groupId>com.fasterxml.jackson.jaxrs</groupId>
 			<artifactId>jackson-jaxrs-json-provider</artifactId>
+			<version>${jackson-2-version}</version>
+		</dependency>
+
+		<!-- JAX-RS provider for YAML -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.jaxrs</groupId>
+			<artifactId>jackson-jaxrs-yaml-provider</artifactId>
+			<version>${jackson-2-version}</version>
+		</dependency>
+
+		<!-- JAX-RS provider for XML -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.jaxrs</groupId>
+			<artifactId>jackson-jaxrs-xml-provider</artifactId>
 			<version>${jackson-2-version}</version>
 		</dependency>
 
@@ -172,6 +192,13 @@
 			<artifactId>jersey-container-servlet-core</artifactId>
 			<version>${jersey-2-version}</version>
 		</dependency>
+
+		<dependency>
+			<groupId>org.glassfish.jersey.ext</groupId>
+			<artifactId>jersey-declarative-linking</artifactId>
+			<version>${jersey-2-version}</version>
+		</dependency>
+
 
 
 		<!-- SWAGGER -->
@@ -207,7 +234,7 @@
 		</dependency>
 
 		<!-- WEBJARS -->
-		<!--  available as /sqlwebservice/webjars/bootstrap/3.1.0/css/bootstrap.min.css -->
+		<!-- available as /sqlwebservice/webjars/bootstrap/3.1.0/css/bootstrap.min.css -->
 
 		<dependency>
 			<groupId>org.webjars</groupId>
@@ -220,12 +247,12 @@
 			<artifactId>select2</artifactId>
 			<version>4.0.3</version>
 		</dependency>
-		
+
 		<dependency>
-        <groupId>org.webjars</groupId>
-        <artifactId>bootstrap</artifactId>
-        <version>3.3.7-1</version>
-    </dependency>
+			<groupId>org.webjars</groupId>
+			<artifactId>bootstrap</artifactId>
+			<version>3.3.7-1</version>
+		</dependency>
 
 		<dependency>
 			<groupId>org.webjars</groupId>

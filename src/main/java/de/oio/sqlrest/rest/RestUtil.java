@@ -36,7 +36,6 @@ package de.oio.sqlrest.rest;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
-
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
@@ -93,7 +92,7 @@ public class RestUtil {
 	/**
 	 * URI of XSLT transformation
 	 */
-	 public static String xslt = null;
+	public static String xslt = null;
 	
 	/**
 	 * URI of GRDDL transformation
