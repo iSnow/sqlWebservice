@@ -1,4 +1,4 @@
-package de.isnow.sqlws.rest;
+package de.isnow.sqlws.resources;
 
 import java.util.ArrayList;
 import java.util.Collection;

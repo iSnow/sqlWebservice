@@ -1,0 +1,4 @@
+logging:
+  level: INFO
+  loggers:
+    de.isnow.dropwizard: DEBUG

@@ -16,8 +16,8 @@ import org.glassfish.jersey.linking.InjectLinks;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import de.isnow.sqlws.rest.DatabaseService;
-import de.isnow.sqlws.rest.TableService;
+import de.isnow.sqlws.resources.DatabaseService;
+import de.isnow.sqlws.resources.TableService;
 import lombok.Getter;
 import lombok.Setter;
 
