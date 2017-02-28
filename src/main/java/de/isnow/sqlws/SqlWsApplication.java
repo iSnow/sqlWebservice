@@ -16,71 +16,86 @@ import de.isnow.sqlws.resources.RootService;
 import de.isnow.sqlws.resources.TableService;
 import de.isnow.sqlws.util.RestUtil;
 import de.isnow.sqlws.util.XmlConfigUtil;
+
 import io.dropwizard.Application;
+import io.dropwizard.bundles.webjars.WebJarBundle;
+import io.dropwizard.configuration.ResourceConfigurationSourceProvider;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import io.federecio.dropwizard.swagger.SwaggerBundle;
+import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class SqlWsApplication extends Application<SqlWsConfiguration> {
-	
-	 public static void main(final String[] args) throws Exception {
+
+	// for external configuration, remove the second arg
+	public static void main(final String[] args) throws Exception {
+		log.debug("Application start up");
 		new SqlWsApplication()
-			.run(new String[]{"server", System.getProperty("dropwizard.config")});
-    }
-    
-    
-    @Override
-    public String getName() {
-        return "Test3";
-    }
+		.run(new String[]{"server", "configuration.yml"});
+	}
 
-    @Override
-    public void initialize(final Bootstrap<SqlWsConfiguration> bootstrap) {
-        // TODO: application initialization
-    }
 
-    @Override
-    public void run(final SqlWsConfiguration configuration,
-                    final Environment environment) {
-    	environment.jersey().register(new DatabaseService());
-    	environment.jersey().register(new RootService());
-    	environment.jersey().register(new TableService());
-    	environment.jersey().packages("de.isnow.sqlws;de.isnow.sqlws.model;de.isnow.sqlws.rest;org.glassfish.jersey.linking");
-    	environment.jersey().register(DeclarativeLinkingFeature.class);
+	@Override
+	public String getName() {
+		return "sqlWebservice";
+	}
 
-    }
+	@Override
+	public void initialize(final Bootstrap<SqlWsConfiguration> bootstrap) {
+		bootstrap.setConfigurationSourceProvider(
+				new ResourceConfigurationSourceProvider());
+		bootstrap.addBundle(new WebJarBundle());
+		bootstrap.addBundle(new SwaggerBundle<SqlWsConfiguration>() {
+			@Override
+			protected SwaggerBundleConfiguration getSwaggerBundleConfiguration(SqlWsConfiguration configuration) {
+				return configuration.swaggerBundleConfiguration;
+			}
+		});
+	}
+
+	@Override
+	public void run(final SqlWsConfiguration configuration,
+			final Environment environment) {
+
+		System.out.println("in run()");
+		environment.jersey().register(new DatabaseService());
+		environment.jersey().register(new RootService());
+		environment.jersey().register(new TableService());
+		environment.jersey().packages("de.isnow.sqlws;de.isnow.sqlws.model;de.isnow.sqlws.resources;org.glassfish.jersey.linking");
+		environment.jersey().register(DeclarativeLinkingFeature.class);
+
+	}
 
 	public SqlWsApplication() {
 		log.info("ResourceConfig Application init");
 		init(); 
-		/*File path = new File(ctx.getRealPath("/"));
-		ctx.setAttribute("warpath", path);
-		init();*/
 	}
 
 	public void init()  {
 		try {
 			ClassLoader classLoader = getClass().getClassLoader();
 			InputStream in = classLoader.getResourceAsStream ("sqlrestconf.xml");
-			
+
 			Map<String, String> valuePairs = XmlConfigUtil.readConfig(in);
 			RestUtil.takeValuesFromConfig(valuePairs);
-	
+
 			Class.forName(valuePairs.get("jdbc-driver-class"));
 			System.out.println("test:" + valuePairs);
-			
+
 			HSQLSetup setup = new HSQLSetup();
 			Map<String, Object> kv = new HashMap<>();
 			kv.put("classloader", classLoader);
 			kv.put("jarpath", "data"+ File.separator);
 			setup.beforeStart(new URI(valuePairs.get("database-url")), kv);
-			
+
 			DbConnectionStore.newConnection(
-				//getDatabaseUrl(valuePairs, ctx), 
+					//getDatabaseUrl(valuePairs, ctx), 
 					getDatabaseUrl(valuePairs, null), 
-				valuePairs.get("user"), 
-				valuePairs.get("password"));
+					valuePairs.get("user"), 
+					valuePairs.get("password"));
+			System.out.println("connected");
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}

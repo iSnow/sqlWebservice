@@ -7,8 +7,6 @@ import java.util.Map;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import de.oio.sqlrest.RESTRequestHandler;
-
 public class XmlConfigUtil {
 
 	public static Map<String, String> readConfig(File conf)  {
@@ -19,7 +17,7 @@ public class XmlConfigUtil {
 		SAXParserFactory factory = SAXParserFactory.newInstance();
 		try {
 			SAXParser parser = factory.newSAXParser();
-			RESTRequestHandler handler = new RESTRequestHandler();
+			XmlConfigHandler handler = new XmlConfigHandler();
 			parser.parse(conf, handler);
 			Map<String, String> valuePairs = handler.getValuePairs();
 			return valuePairs;
@@ -34,7 +32,7 @@ public class XmlConfigUtil {
 		SAXParserFactory factory = SAXParserFactory.newInstance();
 		try {
 			SAXParser parser = factory.newSAXParser();
-			RESTRequestHandler handler = new RESTRequestHandler();
+			XmlConfigHandler handler = new XmlConfigHandler();
 			parser.parse(conf, handler);
 			Map<String, String> valuePairs = handler.getValuePairs();
 			return valuePairs;

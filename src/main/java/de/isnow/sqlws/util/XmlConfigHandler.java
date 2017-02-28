@@ -31,7 +31,7 @@
  * 
  */
 
-package de.oio.sqlrest;
+package de.isnow.sqlws.util;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -45,7 +45,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author tbayer
  *
  */
-public class RESTRequestHandler extends DefaultHandler {
+public class XmlConfigHandler extends DefaultHandler {
 
 	private StringBuffer text = new StringBuffer();
 	private String elementName = "";

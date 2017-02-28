@@ -1,0 +1,8 @@
+logging:
+  level: INFO
+  loggers:
+    de.isnow.dropwizard: DEBUG
+    
+# the only required property is resourcePackage, for more config options see below
+swagger:
+  resourcePackage: de.isnow.sqlws.resources
