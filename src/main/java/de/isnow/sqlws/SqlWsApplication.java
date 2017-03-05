@@ -18,7 +18,6 @@ import de.isnow.sqlws.util.RestUtil;
 import de.isnow.sqlws.util.XmlConfigUtil;
 
 import io.dropwizard.Application;
-import io.dropwizard.bundles.webjars.WebJarBundle;
 import io.dropwizard.configuration.ResourceConfigurationSourceProvider;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
@@ -28,6 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class SqlWsApplication extends Application<SqlWsConfiguration> {
+	private BundleInitializer initializer;
 
 	// for external configuration, remove the second arg
 	public static void main(final String[] args) throws Exception {
@@ -41,12 +41,18 @@ public class SqlWsApplication extends Application<SqlWsConfiguration> {
 	public String getName() {
 		return "sqlWebservice";
 	}
-
+	
 	@Override
+	/**
+	 * Extendible initialize() function. If the setInitializer() method was used
+	 * to set a BundleInitializer, call it here.
+	 * @see io.dropwizard.Application#initialize(io.dropwizard.setup.Bootstrap)
+	 */
 	public void initialize(final Bootstrap<SqlWsConfiguration> bootstrap) {
 		bootstrap.setConfigurationSourceProvider(
 				new ResourceConfigurationSourceProvider());
-		bootstrap.addBundle(new WebJarBundle());
+		if (null != initializer)
+			initializer.initialize (bootstrap);
 		bootstrap.addBundle(new SwaggerBundle<SqlWsConfiguration>() {
 			@Override
 			protected SwaggerBundleConfiguration getSwaggerBundleConfiguration(SqlWsConfiguration configuration) {
@@ -56,16 +62,28 @@ public class SqlWsApplication extends Application<SqlWsConfiguration> {
 	}
 
 	@Override
+	
+	/**
+	 * Extendible run() function. If the setInitializer() method was used
+	 * to set a BundleInitializer, call it here.
+
+	 * Parses command-line arguments and runs the application. Call this method from a public static void main entry point in your application.
+
+	 * @Parameters:  arguments the command-line arguments
+	 * @Throws: Exception - if something goes wrong
+	 *
+	 * @see io.dropwizard.Application#run(io.dropwizard.Configuration, io.dropwizard.setup.Environment)
+	 */
 	public void run(final SqlWsConfiguration configuration,
 			final Environment environment) {
-
-		System.out.println("in run()");
+		if (null != initializer)
+			initializer.runConfig(configuration, environment);
+		
 		environment.jersey().register(new DatabaseService());
 		environment.jersey().register(new RootService());
 		environment.jersey().register(new TableService());
 		environment.jersey().packages("de.isnow.sqlws;de.isnow.sqlws.model;de.isnow.sqlws.resources;org.glassfish.jersey.linking");
 		environment.jersey().register(DeclarativeLinkingFeature.class);
-
 	}
 
 	public SqlWsApplication() {
@@ -106,10 +124,8 @@ public class SqlWsApplication extends Application<SqlWsConfiguration> {
 	 * get the real absolute path of the database. This is only used if the
 	 * internal example DB should be used.
 	 * 
-	 * @param valuePairs
-	 *            with the sqlrestconf name/value pairs
-	 * @param ctx
-	 *            the servletcontext we are running in
+	 * @param valuePairs  with the sqlrestconf name/value pairs
+	 * @param ctx the servletcontext we are running in
 	 * @return database URL
 	 */
 	private static String getDatabaseUrl(Map<String, String> valuePairs, ServletContext ctx) {
@@ -119,6 +135,17 @@ public class SqlWsApplication extends Application<SqlWsConfiguration> {
 			url = "jdbc:hsqldb:" + System.getProperty("java.io.tmpdir") + "exampledb";
 		}
 		return url;
+	}
+
+
+	/**
+	 * Set an initializer that gets called from initialize() to allow for 
+	 * additional configuration
+	 * @param initializer the initializer to set
+	 */
+	public SqlWsApplication setInitializer(BundleInitializer initializer) {
+		this.initializer = initializer;
+		return this;
 	}
 
 
