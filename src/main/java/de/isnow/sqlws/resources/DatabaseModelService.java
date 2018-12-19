@@ -16,8 +16,8 @@ import de.isnow.sqlws.model.WsCatalog;
 import de.isnow.sqlws.model.WsConnection;
 import de.isnow.sqlws.model.WsSchema;
 
-@Path("/catalog")
-public class DatabaseService {
+@Path("/model/catalog")
+public class DatabaseModelService {
 	
 
 	@GET

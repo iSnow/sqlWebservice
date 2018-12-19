@@ -51,17 +51,16 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class DatabaseUtil {
 
-	
-
 	/**
 	 * Method getTable.
 	 * @param tableName
+	 * @param connection
 	 */
-	public static Collection<String> getPrimaryKeyValuesFromTable(String tableName, DBConnection connection) {
+	public static Collection<String> getPrimaryKeyValuesFromTable(String tableName, WsConnection connection) {
 		ArrayList<String> ids = new ArrayList<>();
 
 		try {
-			Connection conn = connection.getConnection();
+			Connection conn = connection.getNativeConnection();
 			ResultSet resultSet = conn.prepareStatement(getPrimaryKeyValuesSelectStatement(tableName)).executeQuery();
 			String pkColumnName = getPrimaryKeyColumnName(tableName, connection);
 			while (resultSet.next()) {
@@ -98,7 +97,7 @@ public class DatabaseUtil {
 			|| Types.TINYINT == type;
 	}
 
-	public static String getPrimaryKeyColumnName(String tableName, DBConnection connection) {
+	public static String getPrimaryKeyColumnName(String tableName, WsConnection connection) {
 
 		try {
 			DatabaseMetaData metaData = connection.getMetaData();
@@ -113,10 +112,11 @@ public class DatabaseUtil {
 	/**
 	 * Method getColumnType.
 	 * @param tableName
-	 * @param string
+	 * @param columnName
+	 * @param connection
 	 * @return String
 	 */
-	public static int getColumnType(String tableName, String columnName, DBConnection connection) {
+	public static int getColumnType(String tableName, String columnName, WsConnection connection) {
 		try {
 			DatabaseMetaData metaData = connection.getMetaData();
 			ResultSet resultSet = metaData.getColumns(null, null, tableName, columnName);
@@ -133,11 +133,12 @@ public class DatabaseUtil {
 
 	/**
 	 * Method deleteRow.
-	 * @param string
-	 * @param string1
+	 * @param tableName
+	 * @param primaryKey
+	 * @param connection
 	 */
-	public static void deleteRow(String tableName, String primaryKey, DBConnection connection) throws SQLException, NoRowsAffectedException {
-		Connection conn = connection.getConnection();
+	public static void deleteRow(String tableName, String primaryKey, WsConnection connection) throws SQLException, NoRowsAffectedException {
+		Connection conn = connection.getNativeConnection();
 		PreparedStatement statement =
 			conn.prepareStatement(getRowDeleteStatement(tableName, primaryKey, connection));
 
@@ -154,9 +155,10 @@ public class DatabaseUtil {
 	 * Method getRowDeleteStatement.
 	 * @param tableName
 	 * @param primaryKey
+	 * @param connection
 	 * @return String
 	 */
-	private static String getRowDeleteStatement(String tableName, String primaryKey, DBConnection connection) {
+	private static String getRowDeleteStatement(String tableName, String primaryKey, WsConnection connection) {
 		return "delete from "
 			+ tableName
 			+ " where "
@@ -169,24 +171,25 @@ public class DatabaseUtil {
 	/**
 	 * Method getColumnsMetaData.
 	 * @param tableName
+	 * @param connection
 	 * @return Collection
 	 */
-	public static Collection<Column> getColumnsMetaData(String tableName, DBConnection connection) {
-		ArrayList<Column> columns = new ArrayList<>();
+	public static Collection<WsColumn> getColumnsMetaData(String tableName, WsConnection connection) {
+		ArrayList<WsColumn> wsColumns = new ArrayList<>();
 
 		try {
 			DatabaseMetaData dbMetaData = connection.getMetaData();
 			ResultSet rs = dbMetaData.getColumns( null, null, tableName, null);
 
 			while( rs.next()) {				
-				columns.add( new Column( rs.getString("COLUMN_NAME"), rs.getInt("DATA_TYPE"), rs.getInt("COLUMN_SIZE")));				
+				wsColumns.add( new WsColumn( rs.getString("COLUMN_NAME"), rs.getInt("DATA_TYPE"), rs.getInt("COLUMN_SIZE")));
 			}
 
 		} catch (SQLException e) {
 			throw new RuntimeException(e);
 		}
 
-		return columns;		
+		return wsColumns;
 		
 	}
 

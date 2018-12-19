@@ -52,7 +52,7 @@ public class RestUtil {
 
 	/**
 	 * Method getTableUrl.
-	 * @param request
+	 * @param servletURL
 	 * @param tableName
 	 * @return String
 	 */
@@ -62,7 +62,7 @@ public class RestUtil {
 	
 	/**
 	 * Method getRowUrl.
-	 * @param request
+	 * @param servletURL
 	 * @param tableName
 	 * @param id
 	 * @return String
