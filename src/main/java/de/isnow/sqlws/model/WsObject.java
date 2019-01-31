@@ -4,6 +4,7 @@ package de.isnow.sqlws.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 
+import javax.validation.constraints.NotNull;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,7 +23,7 @@ public class WsObject implements Comparable<WsObject>{
     @Getter
     protected String fullName;
 
-    protected Registry<WsObject> initRegistry(Class clazz) {
+    Registry<WsObject> initRegistry(Class clazz) {
         Registry<WsObject> wsObjectRegistry = registries.get(clazz);
         if (null == wsObjectRegistry) {
             wsObjectRegistry = new Registry<>();
@@ -32,9 +33,7 @@ public class WsObject implements Comparable<WsObject>{
     }
 
     @Override
-    public int compareTo(WsObject o) {
-        if ((null == id) || (null == o.id))
-            return 0;
+    public int compareTo(@NotNull WsObject o) {
         return id.compareTo(o.id);
     }
 }

@@ -24,8 +24,9 @@
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<postgresql-version>42.2.1</postgresql-version>
+		<derby-version>10.13.1.1</derby-version>
 		<!-- <slf4jVersion>1.7.22</slf4jVersion> -->
-		<jackson-2-version>2.9.7</jackson-2-version>
+		<jackson-2-version>2.9.8</jackson-2-version>
 		<jersey-2-version>2.25.1</jersey-2-version>
 		<swagger-version>1.5.12</swagger-version>
 		<servlet-api-version>3.1.0</servlet-api-version>
@@ -115,14 +116,28 @@
 			<scope>test</scope>
 		</dependency>
 
+		<!-- DATABASES -->
+
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
 			<version>${postgresql-version}</version>
 		</dependency>
 
+		<dependency>
+			<groupId>org.apache.derby</groupId>
+			<artifactId>derbyclient</artifactId>
+			<version>${derby-version}</version>
+		</dependency>
 
-                <!-- JSON -->
+		<dependency>
+			<groupId>org.apache.derby</groupId>
+			<artifactId>derby</artifactId>
+			<version>${derby-version}</version>
+		</dependency>
+
+
+		<!-- JSON -->
 
 		<!-- the core, which includes Streaming API, shared low-level abstractions 
 			(but NOT data-binding) -->

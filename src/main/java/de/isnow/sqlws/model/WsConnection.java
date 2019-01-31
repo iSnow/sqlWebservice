@@ -176,14 +176,14 @@ public class WsConnection extends WsObject {
 
 	@SneakyThrows
 	private void setUp(SchemaCrawlerOptions options) {
+		Registry<WsObject> wsObjectRegistry = initRegistry(this.getClass());
+		wsObjectRegistry.register(this);
 		if (null == options)
 			catalog = new WsCatalog(SchemaCrawlerUtility.getCatalog(nativeConnection, SchemaCrawlerOptionsBuilder.newSchemaCrawlerOptions()), this);
 		else
 			catalog = new WsCatalog(SchemaCrawlerUtility.getCatalog(nativeConnection, options), this);
-		schemas= catalog.getSchemas();
+		schemas = catalog.getSchemas();
 		currentSchema = nativeConnection.getSchema();
-		Registry<WsObject> wsObjectRegistry = initRegistry(this.getClass());
-		wsObjectRegistry.register(this);
 	}
 
 	@InjectLinks({

@@ -1,29 +1,22 @@
 package de.isnow.sqlws;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.UncheckedIOException;
-import java.net.URL;
-import java.sql.Connection;
 import java.util.*;
 
 import javax.persistence.*;
-import javax.persistence.spi.ClassTransformer;
-import javax.persistence.spi.PersistenceUnitInfo;
-import javax.persistence.spi.PersistenceUnitTransactionType;
 import javax.servlet.DispatcherType;
 import javax.servlet.FilterRegistration;
-import javax.sql.DataSource;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import de.isnow.sqlws.db.WsPersistenceUnitInfo;
 import de.isnow.sqlws.model.WsConnection;
+import de.isnow.sqlws.model.config.ConnectionConfig;
+import de.isnow.sqlws.model.config.SqlRestConfiguration;
+import de.isnow.sqlws.model.config.SqlRestConfigurationConnection;
 import de.isnow.sqlws.resources.ObjectMapperContextResolver;
 import io.dropwizard.assets.AssetsBundle;
-import lombok.Getter;
-import lombok.Setter;
 import org.eclipse.jetty.servlets.CrossOriginFilter;
 import org.glassfish.jersey.linking.DeclarativeLinkingFeature;
 
@@ -34,7 +27,6 @@ import io.dropwizard.setup.Environment;
 import io.federecio.dropwizard.swagger.SwaggerBundle;
 import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.internal.SessionImpl;
 import org.hibernate.jpa.HibernatePersistenceProvider;
 import schemacrawler.schemacrawler.*;
 
@@ -134,33 +126,24 @@ public class SqlWsApplication extends Application<SqlWsConfiguration> {
 		try {
 			SchemaCrawlerOptions options = configureOptions();
 			ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-			ConnectionConfig config=null;
+			SqlRestConfiguration sqlRestConfig=null;
+			ConnectionConfig config = null;
 			try {
 				ClassLoader classLoader = getClass().getClassLoader();
 				InputStream in = classLoader.getResourceAsStream("sqlrestconf.yml");
-				config = mapper.readValue(in, ConnectionConfig.class);
+				sqlRestConfig = mapper.readValue(in, SqlRestConfiguration.class);
+				config = sqlRestConfig.getConnectionConfig();
 			} catch (Exception e) {
 				e.printStackTrace();
 				System.exit(-1);
 			}
-
-			/*WsConnection conn = new WsConnection(
-					config.databaseUrl,
-					config.user,
-					config.password,
-					config.name,
-					options);*/
-			/*Map<String, String> persistenceMap = new HashMap<String, String>();
-			persistenceMap.put("javax.persistence.jdbc.url", config.databaseUrl);
-			persistenceMap.put("javax.persistence.jdbc.user", config.user);
-			persistenceMap.put("javax.persistence.jdbc.password", config.password);
-			persistenceMap.put("javax.persistence.jdbc.driver", config.jdbcDriverClass);*/
+			new SqlRestConfigurationConnection(sqlRestConfig.getInternalStoreConfig());
 
 			Properties props = new Properties();
-			props.put("javax.persistence.jdbc.url", config.databaseUrl);
-			props.put("javax.persistence.jdbc.user", config.user);
-			props.put("javax.persistence.jdbc.password", config.password);
-			props.put("name", config.name);
+			props.put("javax.persistence.jdbc.url", config.getDatabaseUrl());
+			props.put("javax.persistence.jdbc.user", config.getUser());
+			props.put("javax.persistence.jdbc.password", config.getPassword());
+			props.put("name", config.getName());
 
 			WsPersistenceUnitInfo persistenceUnitInfo = new WsPersistenceUnitInfo();
 			persistenceUnitInfo.setProperties(props);
@@ -169,11 +152,10 @@ public class SqlWsApplication extends Application<SqlWsConfiguration> {
 			EntityManagerFactory entityManagerFactory = hibernatePersistenceProvider
 					.createContainerEntityManagerFactory(persistenceUnitInfo, Collections.EMPTY_MAP);
 
-
 			new WsConnection(
 					entityManagerFactory,
-					config.databaseUrl,
-					config.name,
+					config.getDatabaseUrl(),
+					config.getName(),
 					options);
 
 			System.out.println("connected");
