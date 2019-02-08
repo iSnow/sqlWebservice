@@ -44,7 +44,7 @@ public class WsCatalog  extends WsObject  {
 	private Set<WsSchema> schemas;
 
 	public WsCatalog(Catalog catalog, WsConnection connection) {
-		super();
+		super(catalog);
 		Registry<WsObject> wsObjectRegistry = initRegistry(this.getClass());
 		wsObjectRegistry.register(this);
 

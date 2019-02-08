@@ -87,13 +87,12 @@ public class WsColumn extends WsObject {
 	private boolean primaryKey, foreignKey;
 	
 	public WsColumn() {
-		super();
-		Registry<WsObject> wsObjectRegistry = initRegistry(this.getClass());
-		wsObjectRegistry.register(this);
+		register(this);
 	}
 
 	public WsColumn(Column c) {
-		this();
+		super(c);
+		register(this);
 		this.column = c;
 		this.name = c.getName();
 		this.fullName = c.getFullName();

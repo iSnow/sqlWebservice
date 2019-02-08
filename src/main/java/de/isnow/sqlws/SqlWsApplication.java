@@ -165,12 +165,14 @@ public class SqlWsApplication extends Application<SqlWsConfiguration> {
 	}
 
 
+	// Create the options
 	SchemaCrawlerOptions configureOptions() {
-		// Create the options
-		final SchemaCrawlerOptions options = SchemaCrawlerOptionsBuilder.withMaximumSchemaInfoLevel();
-		// 	withSchemaInfoLevel(SchemaInfoLevel schemaInfoLevel)
+
 		// Set what details are required in the schema - this affects the
 		// time taken to crawl the schema
+		SchemaInfoLevel detailLevel = SchemaInfoLevelBuilder.maximum();
+		SchemaCrawlerOptionsBuilder bldr = SchemaCrawlerOptionsBuilder.builder();
+		final SchemaCrawlerOptions options = bldr.withSchemaInfoLevel(detailLevel).toOptions();
         //options.setSchemaInfoLevel(SchemaCrawlerOptionsBuilder.withMaximumSchemaInfoLevel());
 		//options.setRoutineInclusionRule(new ExcludeAll());
 		//options.setSchemaInclusionRule(new RegularExpressionInclusionRule("PUBLIC.BOOKS"));
