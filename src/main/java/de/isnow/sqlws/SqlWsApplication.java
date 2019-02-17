@@ -1,6 +1,9 @@
 package de.isnow.sqlws;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.*;
 
 import javax.persistence.*;
@@ -13,10 +16,12 @@ import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import de.isnow.sqlws.db.WsPersistenceUnitInfo;
 import de.isnow.sqlws.model.WsConnection;
 import de.isnow.sqlws.model.config.ConnectionConfig;
+import de.isnow.sqlws.model.config.RouterConfig;
 import de.isnow.sqlws.model.config.SqlRestConfiguration;
 import de.isnow.sqlws.model.config.SqlRestConfigurationConnection;
 import de.isnow.sqlws.resources.ObjectMapperContextResolver;
 import io.dropwizard.assets.AssetsBundle;
+import lombok.SneakyThrows;
 import org.eclipse.jetty.servlets.CrossOriginFilter;
 import org.glassfish.jersey.linking.DeclarativeLinkingFeature;
 
@@ -33,10 +38,6 @@ import schemacrawler.schemacrawler.*;
 @Slf4j
 public class SqlWsApplication extends Application<SqlWsConfiguration> {
 	private BundleInitializer initializer;
-
-	/*@Getter
-	@Setter
-	private static Connection conn;*/
 
 	// for external configuration, remove the second arg
 	public static void main(final String[] args) throws Exception {
@@ -122,21 +123,31 @@ public class SqlWsApplication extends Application<SqlWsConfiguration> {
 		init(); 
 	}
 
+	@SneakyThrows
+	private static SqlRestConfiguration getConnectionConfig(ClassLoader classLoader) {
+		ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+		InputStream in = classLoader.getResourceAsStream("sqlrestconf.yml");
+		SqlRestConfiguration sqlRestConfig = mapper.readValue(in, SqlRestConfiguration.class);
+		return sqlRestConfig;
+	}
+
 	public void init()  {
 		try {
 			SchemaCrawlerOptions options = configureOptions();
-			ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
 			SqlRestConfiguration sqlRestConfig=null;
 			ConnectionConfig config = null;
-			try {
-				ClassLoader classLoader = getClass().getClassLoader();
-				InputStream in = classLoader.getResourceAsStream("sqlrestconf.yml");
-				sqlRestConfig = mapper.readValue(in, SqlRestConfiguration.class);
-				config = sqlRestConfig.getConnectionConfig();
-			} catch (Exception e) {
-				e.printStackTrace();
-				System.exit(-1);
-			}
+			Set<RouterConfig> routerConfig = null;
+			ClassLoader classLoader = getClass().getClassLoader();
+			sqlRestConfig = getConnectionConfig(classLoader);
+			config = sqlRestConfig.getConnectionConfig();
+			String routerConfigPath = (String)sqlRestConfig.getApplication().get("routeConfig");
+			File f = new File(routerConfigPath);
+			ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+			InputStream in = new FileInputStream(f);
+			RouterConfig cfg = mapper.readValue(in, RouterConfig.class);
+
+			System.out.println(cfg);
+
 			new SqlRestConfigurationConnection(sqlRestConfig.getInternalStoreConfig());
 
 			Properties props = new Properties();

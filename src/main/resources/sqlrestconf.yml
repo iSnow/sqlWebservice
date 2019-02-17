@@ -14,3 +14,7 @@ internalStoreConfig:
   database-url: jdbc:derby:sqlRestConfigStore;create=true
   user: derby
   password: derby
+
+application:
+  verbose: true
+  routeConfig: /home/snow/Projects/cryptocoins/router-config.yml
