@@ -108,12 +108,12 @@ public class WsTable extends WsObject{
 
 	public WsTable() {
 		super();
-		Registry<WsObject> wsObjectRegistry = initRegistry(this.getClass());
-		wsObjectRegistry.register(this);
+		register(this);
 	}
 
 	public WsTable(Table t, WsSchema schema) {
-		this();
+		super(t);
+		register(this);
 		this.table = t;
 		fks = t.getForeignKeys();
 		indexes = t.getIndexes();

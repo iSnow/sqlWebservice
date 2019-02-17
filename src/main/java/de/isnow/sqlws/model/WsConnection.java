@@ -75,6 +75,7 @@ public class WsConnection extends WsObject {
 		this.name = name;
 		this.fullName = name;
 		this.databaseUri = databaseUrlIn;
+		setId(userIn+"@"+databaseUrlIn);
 
 		Properties props = new Properties();
 		props.put("javax.persistence.jdbc.url", databaseUrlIn);
@@ -98,10 +99,12 @@ public class WsConnection extends WsObject {
 			@NotNull String databaseUrlIn,
 			String name,
 			SchemaCrawlerOptions options) {
+		setId(databaseUrlIn);
 		EntityManager em = entityManagerFactory.createEntityManager();
 		EntityTransaction t = em.getTransaction();
 		t.begin();
 		nativeConnection = em.unwrap(SessionImpl.class).connection();
+
 		t.commit();
 		em.close();
 		this.name = name;

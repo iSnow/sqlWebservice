@@ -38,12 +38,12 @@ public class WsSchema extends WsObject{
 
     private WsSchema() {
         super();
-        Registry<WsObject> wsObjectRegistry = initRegistry(this.getClass());
-        wsObjectRegistry.register(this);
+        register(this);
     }
 
     public WsSchema(Schema schema, WsCatalog catalog) {
-        this();
+        super(schema);
+        register(this);
         this.schema = schema;
         this.owningCatalog = catalog;
         name = schema.getName();
