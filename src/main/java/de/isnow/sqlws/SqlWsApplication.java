@@ -131,23 +131,28 @@ public class SqlWsApplication extends Application<SqlWsConfiguration> {
 		return sqlRestConfig;
 	}
 
+	@SneakyThrows
+	private static RouterConfig getRouterConfig(SqlRestConfiguration sqlRestConfig, ClassLoader classLoader) {
+		ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+		String routerConfigPath = (String)sqlRestConfig.getApplication().get("routeConfig");
+		File f = new File(routerConfigPath);
+		InputStream in = new FileInputStream(f);
+		RouterConfig cfg = mapper.readValue(in, RouterConfig.class);
+		return cfg;
+	}
+
 	public void init()  {
 		try {
 			SchemaCrawlerOptions options = configureOptions();
-			SqlRestConfiguration sqlRestConfig=null;
 			ConnectionConfig config = null;
-			Set<RouterConfig> routerConfig = null;
 			ClassLoader classLoader = getClass().getClassLoader();
-			sqlRestConfig = getConnectionConfig(classLoader);
+			SqlRestConfiguration sqlRestConfig = getConnectionConfig(classLoader);
 			config = sqlRestConfig.getConnectionConfig();
-			String routerConfigPath = (String)sqlRestConfig.getApplication().get("routeConfig");
-			File f = new File(routerConfigPath);
-			ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-			InputStream in = new FileInputStream(f);
-			RouterConfig cfg = mapper.readValue(in, RouterConfig.class);
-
-			System.out.println(cfg);
-
+			try {
+				RouterConfig cfg = getRouterConfig(sqlRestConfig, classLoader);
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
 			new SqlRestConfigurationConnection(sqlRestConfig.getInternalStoreConfig());
 
 			Properties props = new Properties();
