@@ -14,7 +14,7 @@
   <database>
     <!--
     
-    Hypersonic DB in process with the example database
+    Hypersonic DB in process with the example Database
     
     -->
     <jdbc-driver-class>org.hsqldb.jdbcDriver</jdbc-driver-class>
@@ -26,7 +26,7 @@
     External Hypersonic DB
     
     <jdbc-driver-class>org.hsqldb.jdbcDriver</jdbc-driver-class>
-    <wsCatalog-url>jdbc:hsqldb:hsql://localhost</wsCatalog-url>
+    <database-url>jdbc:hsqldb:hsql://localhost</database-url>
     <user>sa</user>
     <password></password>
     -->
@@ -35,7 +35,7 @@
     Inet Sprinta Driver for MS SQL Server 
     
     <jdbc-driver-class>com.inet.tds.TdsDriver</jdbc-driver-class>
-    <wsCatalog-url>jdbc:inetdae7a:localhost:1433</wsCatalog-url>
+    <database-url>jdbc:inetdae7a:localhost:1433</database-url>
     -->
   </database>
 </sqlrestconf>
