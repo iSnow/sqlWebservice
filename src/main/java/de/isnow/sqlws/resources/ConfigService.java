@@ -1,7 +1,9 @@
 package de.isnow.sqlws.resources;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import de.isnow.sqlws.SqlWsApplication;
 import de.isnow.sqlws.model.WsConnection;
+import de.isnow.sqlws.model.config.RouterConfig;
 
 import javax.servlet.ServletContext;
 import javax.ws.rs.GET;
@@ -23,8 +25,8 @@ public class ConfigService {
 
     @GET
     @Path("/routes")
-    public Response getRoot() throws JsonProcessingException {
-        List<WsConnection> cons = new ArrayList<>(WsConnection.getAll());
-        return Response.ok(cons).build();
+    public Response getRoot() {
+        RouterConfig cfg = SqlWsApplication.getRouterConfig();
+        return Response.ok(cfg).build();
     }
 }

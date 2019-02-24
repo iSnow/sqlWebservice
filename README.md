@@ -7,6 +7,9 @@ sqlWebservice exposes relational databases as REST style Web Service. Data can b
 
 sqlWebservice is a fork from http://sqlrest.sourceforge.net/.
 
+## Building
+   mvn package
+
 ##Running:
 For development and testing: first `cd src/main/resources/assets/sqlWebserv/`, then `npm run dev` to start a nodeJS application server capable of hot replacement of edited code. 
 
