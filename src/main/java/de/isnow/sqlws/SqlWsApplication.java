@@ -21,6 +21,7 @@ import de.isnow.sqlws.model.config.SqlRestConfiguration;
 import de.isnow.sqlws.model.config.SqlRestConfigurationConnection;
 import de.isnow.sqlws.resources.ObjectMapperContextResolver;
 import io.dropwizard.assets.AssetsBundle;
+import lombok.Getter;
 import lombok.SneakyThrows;
 import org.eclipse.jetty.servlets.CrossOriginFilter;
 import org.glassfish.jersey.linking.DeclarativeLinkingFeature;
@@ -38,6 +39,12 @@ import schemacrawler.schemacrawler.*;
 @Slf4j
 public class SqlWsApplication extends Application<SqlWsConfiguration> {
 	private BundleInitializer initializer;
+
+	@Getter
+	private SqlRestConfiguration sqlRestConfig;
+
+	@Getter
+	private static RouterConfig routerConfig;
 
 	// for external configuration, remove the second arg
 	public static void main(final String[] args) throws Exception {
@@ -146,10 +153,10 @@ public class SqlWsApplication extends Application<SqlWsConfiguration> {
 			SchemaCrawlerOptions options = configureOptions();
 			ConnectionConfig config = null;
 			ClassLoader classLoader = getClass().getClassLoader();
-			SqlRestConfiguration sqlRestConfig = getConnectionConfig(classLoader);
+			sqlRestConfig = getConnectionConfig(classLoader);
 			config = sqlRestConfig.getConnectionConfig();
 			try {
-				RouterConfig cfg = getRouterConfig(sqlRestConfig, classLoader);
+				routerConfig = getRouterConfig(sqlRestConfig, classLoader);
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
