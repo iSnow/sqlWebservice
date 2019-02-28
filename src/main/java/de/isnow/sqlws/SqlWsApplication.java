@@ -140,10 +140,15 @@ public class SqlWsApplication extends Application<SqlWsConfiguration> {
 
 	@SneakyThrows
 	private static RouterConfig getRouterConfig(SqlRestConfiguration sqlRestConfig, ClassLoader classLoader) {
+		InputStream in =null;
 		ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
 		String routerConfigPath = (String)sqlRestConfig.getApplication().get("routeConfig");
 		File f = new File(routerConfigPath);
-		InputStream in = new FileInputStream(f);
+		if (f.exists()) {
+			in = new FileInputStream(f);
+		} else {
+			in = classLoader.getResourceAsStream("sqlrestconf.yml");
+		}
 		RouterConfig cfg = mapper.readValue(in, RouterConfig.class);
 		return cfg;
 	}
