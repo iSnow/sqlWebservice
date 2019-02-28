@@ -1,6 +1,8 @@
 package de.isnow.sqlws.model.config;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -14,19 +16,25 @@ import java.util.TreeMap;
 
 @JsonAutoDetect(
         fieldVisibility = JsonAutoDetect.Visibility.ANY,
-        getterVisibility = JsonAutoDetect.Visibility.NONE,
+        getterVisibility = JsonAutoDetect.Visibility.ANY,
         setterVisibility = JsonAutoDetect.Visibility.NONE)
 @EqualsAndHashCode(of={"routes"})
 @ToString(of={"routes"})
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude
 public class RouterConfig {
 
     List<RouterConfigRecord> routes;
 
     @EqualsAndHashCode(of={"name", "path"})
     @ToString(of={"name", "path"})
-    public class RouterConfigRecord {
-
-        public RouterConfigRecord(){}
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    @JsonInclude
+    @JsonAutoDetect(
+            fieldVisibility = JsonAutoDetect.Visibility.ANY,
+            getterVisibility = JsonAutoDetect.Visibility.ANY,
+            setterVisibility = JsonAutoDetect.Visibility.NONE)
+    public static class RouterConfigRecord {
 
         String path;
 
