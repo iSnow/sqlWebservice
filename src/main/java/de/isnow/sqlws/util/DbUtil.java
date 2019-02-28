@@ -7,10 +7,7 @@ import lombok.SneakyThrows;
 import javax.persistence.Query;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class DbUtil {
@@ -44,23 +41,30 @@ public class DbUtil {
         sb.append(" FROM ");
         sb.append(table.getFullName());
         if (null != columnFilters) {
+            List<String> clauses = new ArrayList<>();
             for (WsColumn col : columnFilters.keySet()) {
                 String clause = null;
                 switch (col.getDataType()) {
                     case "character":
-                        clause = " WHERE LOWER(" + col.getName() + ") like ? ESCAPE '!'";
+                        clause = " LOWER(" + col.getName() + ") like ? ESCAPE '!'";
                         break;
                     case "integer":
-                        clause = " WHERE " + col.getName() + " = ?";
+                        clause = col.getName() + " = ?";
                         break;
                     case "real":
-                        clause = " WHERE " + col.getName() + " = ?";
+                        clause = col.getName() + " = ?";
+                        break;
+                    case "bit":
+                        clause = col.getName() + " = ?";
                         break;
                     default:
-                        clause = " WHERE " + col.getName() + " = ?";
+                        clause = col.getName() + " = ?";
                         break;
                 }
-                sb.append(clause);
+                clauses.add(clause);
+            }
+            if (clauses.size() != 0) {
+                sb.append(" WHERE " + clauses.stream().collect(Collectors.joining(" AND ")));
             }
         }
         if (null != numRows)
@@ -89,6 +93,10 @@ public class DbUtil {
                     case "real":
                         Double qDouble = Double.parseDouble(qStr);
                         p.setDouble(cnt++, qDouble);
+                        break;
+                    case "bit":
+                        Boolean qBoolean = ((null != qStr));
+                        p.setBoolean(cnt++, qBoolean);
                         break;
                     default:
                         p.setString(cnt++, columnFilters.get(col));
