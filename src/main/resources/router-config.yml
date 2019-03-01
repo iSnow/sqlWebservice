@@ -9,7 +9,7 @@ routes:
       - path: ''
         components:
           default: DefaultView
-          barchart: () => import('@/components/Barchart')
+          barchart: Barchart
 
   - path: "/connection/:id"
     name: Connection

@@ -14,26 +14,16 @@ import java.util.TreeMap;
 
 @Data
 
-@JsonAutoDetect(
-        fieldVisibility = JsonAutoDetect.Visibility.ANY,
-        getterVisibility = JsonAutoDetect.Visibility.ANY,
-        setterVisibility = JsonAutoDetect.Visibility.NONE)
 @EqualsAndHashCode(of={"routes"})
 @ToString(of={"routes"})
-@JsonIgnoreProperties(ignoreUnknown = true)
-@JsonInclude
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public class RouterConfig {
 
     List<RouterConfigRecord> routes;
 
     @EqualsAndHashCode(of={"name", "path"})
     @ToString(of={"name", "path"})
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    @JsonInclude
-    @JsonAutoDetect(
-            fieldVisibility = JsonAutoDetect.Visibility.ANY,
-            getterVisibility = JsonAutoDetect.Visibility.ANY,
-            setterVisibility = JsonAutoDetect.Visibility.NONE)
+    @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
     public static class RouterConfigRecord {
 
         String path;
@@ -42,6 +32,6 @@ public class RouterConfig {
 
         Map<String, String> components = new TreeMap<>();
 
-        Set<RouterConfig> children;
+        Set<RouterConfigRecord> children;
     }
 }
