@@ -8,8 +8,8 @@ routes:
     children:
       - path: ''
         components:
-          default: HelloWorld
-          barchart: Barchart
+          default: DefaultView
+          barchart: () => import('@/components/Barchart')
 
   - path: "/connection/:id"
     name: Connection
@@ -19,7 +19,7 @@ routes:
     children:
       - path: ''
         components:
-          default: HelloWorld
+          default: DefaultView
           barchart: Barchart
 
   - path: "/schema/:id"
@@ -30,7 +30,7 @@ routes:
     children:
       - path: ''
         components:
-          default: HelloWorld
+          default: DefaultView
           barchart: Barchart
 
   - path: "/connections"
