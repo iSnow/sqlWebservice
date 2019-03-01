@@ -4,35 +4,11 @@ routes:
     name: Home
     components:
       maincontent: SQLEditorLayout
-      connections: ConnectionInfo
+      connections: () => import('@/components/ConnectionInfo')
     children:
       - path: ''
         components:
-          default: HelloWorld
-          barchart: Barchart
+          default: DefaultView
+          barchart: Barchart')
+    props: true
 
-  - path: "/connection/:id"
-    name: Connection
-    components:
-      maincontent: SQLEditorLayout
-      connections: ConnectionInfo
-    children:
-      - path: ''
-        components:
-          default: HelloWorld
-          barchart: Barchart
-
-  - path: "/schema/:id"
-    name: Schema
-    components:
-      maincontent: SQLEditorLayout
-      connections: ConnectionInfo
-    children:
-      - path: ''
-        components:
-          default: HelloWorld
-          barchart: Barchart
-
-  - path: "/connections"
-    name: Connections
-    component: ConnectionInfo

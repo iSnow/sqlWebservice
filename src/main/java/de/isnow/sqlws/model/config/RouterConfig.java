@@ -7,41 +7,29 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
+import java.util.*;
 
 @Data
-
-@JsonAutoDetect(
-        fieldVisibility = JsonAutoDetect.Visibility.ANY,
-        getterVisibility = JsonAutoDetect.Visibility.ANY,
-        setterVisibility = JsonAutoDetect.Visibility.NONE)
 @EqualsAndHashCode(of={"routes"})
 @ToString(of={"routes"})
-@JsonIgnoreProperties(ignoreUnknown = true)
-@JsonInclude
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public class RouterConfig {
 
     List<RouterConfigRecord> routes;
 
     @EqualsAndHashCode(of={"name", "path"})
-    @ToString(of={"name", "path"})
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    @JsonInclude
-    @JsonAutoDetect(
-            fieldVisibility = JsonAutoDetect.Visibility.ANY,
-            getterVisibility = JsonAutoDetect.Visibility.ANY,
-            setterVisibility = JsonAutoDetect.Visibility.NONE)
+    @ToString(of={"name", "path", "children"})
+    @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
     public static class RouterConfigRecord {
 
         String path;
 
         String name;
 
+        boolean props;
+
         Map<String, String> components = new TreeMap<>();
 
-        Set<RouterConfig> children;
+        List<RouterConfigRecord> children = new ArrayList<>();
     }
 }

@@ -41,14 +41,14 @@ public class ConfigService {
 
     @SneakyThrows
     private static RouterConfig getRouterConfig(SqlRestConfiguration sqlRestConfig, ClassLoader classLoader) {
-        InputStream in =null;
+        InputStream in;
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         String routerConfigPath = (String)sqlRestConfig.getApplication().get("routeConfig");
         File f = new File(routerConfigPath);
         if (f.exists()) {
             in = new FileInputStream(f);
         } else {
-            in = classLoader.getResourceAsStream("router-config.yml");
+            in = classLoader.getResourceAsStream("router-config-small.yml");
         }
         RouterConfig cfg = mapper.readValue(in, RouterConfig.class);
         return cfg;
