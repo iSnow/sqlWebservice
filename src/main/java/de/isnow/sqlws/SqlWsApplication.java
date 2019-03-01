@@ -41,10 +41,7 @@ public class SqlWsApplication extends Application<SqlWsConfiguration> {
 	private BundleInitializer initializer;
 
 	@Getter
-	private SqlRestConfiguration sqlRestConfig;
-
-	@Getter
-	private static RouterConfig routerConfig;
+	private static SqlRestConfiguration sqlRestConfig;
 
 	// for external configuration, remove the second arg
 	public static void main(final String[] args) throws Exception {
@@ -138,21 +135,6 @@ public class SqlWsApplication extends Application<SqlWsConfiguration> {
 		return sqlRestConfig;
 	}
 
-	@SneakyThrows
-	private static RouterConfig getRouterConfig(SqlRestConfiguration sqlRestConfig, ClassLoader classLoader) {
-		InputStream in =null;
-		ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-		String routerConfigPath = (String)sqlRestConfig.getApplication().get("routeConfig");
-		File f = new File(routerConfigPath);
-		if (f.exists()) {
-			in = new FileInputStream(f);
-		} else {
-			in = classLoader.getResourceAsStream("sqlrestconf.yml");
-		}
-		RouterConfig cfg = mapper.readValue(in, RouterConfig.class);
-		return cfg;
-	}
-
 	public void init()  {
 		try {
 			SchemaCrawlerOptions options = configureOptions();
@@ -160,11 +142,6 @@ public class SqlWsApplication extends Application<SqlWsConfiguration> {
 			ClassLoader classLoader = getClass().getClassLoader();
 			sqlRestConfig = getConnectionConfig(classLoader);
 			config = sqlRestConfig.getConnectionConfig();
-			try {
-				routerConfig = getRouterConfig(sqlRestConfig, classLoader);
-			} catch (Exception ex) {
-				ex.printStackTrace();
-			}
 			new SqlRestConfigurationConnection(sqlRestConfig.getInternalStoreConfig());
 
 			Properties props = new Properties();
