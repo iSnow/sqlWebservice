@@ -7,9 +7,13 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 
 @Data
+
 @EqualsAndHashCode(of={"routes"})
 @ToString(of={"routes"})
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
@@ -18,7 +22,7 @@ public class RouterConfig {
     List<RouterConfigRecord> routes;
 
     @EqualsAndHashCode(of={"name", "path"})
-    @ToString(of={"name", "path", "children"})
+    @ToString(of={"name", "path"})
     @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
     public static class RouterConfigRecord {
 
@@ -26,10 +30,8 @@ public class RouterConfig {
 
         String name;
 
-        boolean props;
-
         Map<String, String> components = new TreeMap<>();
 
-        List<RouterConfigRecord> children = new ArrayList<>();
+        Set<RouterConfigRecord> children;
     }
 }

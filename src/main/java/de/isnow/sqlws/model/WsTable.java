@@ -186,6 +186,17 @@ public class WsTable extends WsObject{
 		return filters;
 	}
 
+	public Map<String,List<WsColumn>> getColumnsByType() {
+		Map<String,List<WsColumn>> colMap = new HashMap<>();
+		columns.forEach((c) -> {
+			if (null == colMap.get(c.getDataType())){
+				colMap.put(c.getDataType(), new ArrayList<>());
+			}
+			colMap.get(c.getDataType()).add(c);
+		});
+		return colMap;
+	}
+
 	@InjectLinks({
 			@InjectLink(
 					resource= TableModelService.class,

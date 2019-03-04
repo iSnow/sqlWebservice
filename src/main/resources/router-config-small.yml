@@ -4,11 +4,11 @@ routes:
     name: Home
     components:
       maincontent: SQLEditorLayout
-      connections: () => import('@/components/ConnectionInfo')
+      connections: ConnectionInfo
     children:
       - path: ''
         components:
           default: DefaultView
-          barchart: Barchart')
+          barchart: Barchart
     props: true
 

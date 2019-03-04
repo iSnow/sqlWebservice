@@ -31,7 +31,6 @@ public class TableContentService {
         if (null == table) {
             return null;
         }
-        System.out.println(filters);
         filters.forEach((f) -> {
             String parts[] = f.split(":");
             if (parts.length > 1) {
@@ -44,13 +43,6 @@ public class TableContentService {
         WsConnection conn = catalog.getOwningConnection();
         if ((null == columnsToShow) || (columnsToShow.isEmpty()))
             columnsToShow = table.getColumnsByName().keySet();
-        else if (columnsToShow.size() == 1) {
-            // this is the case when @QueryParam("columnsToShow") contains
-            // an empty set - show all columns in that case
-            if (columnsToShow.iterator().next().isEmpty()) {
-                columnsToShow = table.getColumnsByName().keySet();
-            }
-        }
 
         PreparedStatement p = DbUtil.createLimitedReadQuery(
                 table,
