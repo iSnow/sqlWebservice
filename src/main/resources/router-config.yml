@@ -11,30 +11,33 @@ routes:
           default: DefaultView
           barchart: Barchart
 
+  - path: "/connections"
+    name: Connections
+    components:
+      default: ConnectionInfo
+
   - path: "/connection/:id"
     name: Connection
     components:
       maincontent: SQLEditorLayout
       connections: ConnectionInfo
-    children:
-      - path: ''
-        components:
-          default: DefaultView
-          barchart: Barchart
 
   - path: "/schema/:id"
     name: Schema
     components:
       maincontent: SQLEditorLayout
       connections: ConnectionInfo
-    children:
-      - path: ''
-        components:
-          default: DefaultView
-          barchart: Barchart
 
-  - path: "/connections"
-    name: Connections
+  - path: "/table/:id"
+    name: Table
     components:
-        default: ConnectionInfo
+      maincontent: SQLEditorLayout
+      connections: ConnectionInfo
+
+  - path: "/inspector/:table/row/:id"
+    name: Dataset
+    components:
+      maincontent: SQLEditorLayout
+      connections: ConnectionInfo
+
 
