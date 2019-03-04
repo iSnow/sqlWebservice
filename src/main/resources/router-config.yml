@@ -5,6 +5,9 @@ routes:
     components:
       maincontent: SQLEditorLayout
       connections: ConnectionInfo
+    props:
+      maincontent: true
+      connections: true
     children:
       - path: ''
         components:
@@ -15,29 +18,43 @@ routes:
     name: Connections
     components:
       default: ConnectionInfo
+    props:
+      default: true
 
   - path: "/connection/:id"
     name: Connection
     components:
       maincontent: SQLEditorLayout
       connections: ConnectionInfo
+    props:
+      maincontent: true
+      connections: true
 
   - path: "/schema/:id"
     name: Schema
     components:
       maincontent: SQLEditorLayout
       connections: ConnectionInfo
+    props:
+      maincontent: true
+      connections: true
 
   - path: "/table/:id"
     name: Table
     components:
       maincontent: SQLEditorLayout
-      connections: ConnectionInfo
+      connections: ConnectionInfo,
+    props:
+      maincontent: true
+      connections: true
 
   - path: "/inspector/table/:table/row/:id"
     name: Dataset
     components:
       maincontent: DynamicConfigurableComponent
       connections: ConnectionInfo
+    props:
+      maincontent: true
+      connections: true
 
 

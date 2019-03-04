@@ -137,7 +137,7 @@ public class ConfigService {
         if (f.exists()) {
             in = new FileInputStream(f);
         } else {
-            in = classLoader.getResourceAsStream("router-config-small.yml");
+            in = classLoader.getResourceAsStream("router-config.yml");
         }
         RouterConfig cfg = mapper.readValue(in, RouterConfig.class);
         return cfg;

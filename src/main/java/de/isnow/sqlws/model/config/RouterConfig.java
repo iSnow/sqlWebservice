@@ -32,6 +32,8 @@ public class RouterConfig {
 
         Map<String, String> components = new TreeMap<>();
 
+        Map<String, String> props = new TreeMap<>();
+
         Set<RouterConfigRecord> children;
     }
 }
