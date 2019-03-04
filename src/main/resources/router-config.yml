@@ -7,9 +7,9 @@ routes:
       connections: ConnectionInfo
     props:
       maincontent:
-        name: Home
+        - name: Home
       connections:
-        name: Connections
+        - name: Connections
     children:
       - path: ''
         components:
@@ -22,7 +22,7 @@ routes:
       default: ConnectionInfo
     props:
       default:
-        name: Home
+        - name: Home
 
   - path: "/connection/:id"
     name: Connection
@@ -31,9 +31,9 @@ routes:
       connections: ConnectionInfo
     props:
       maincontent:
-        name: Home
+        - name: Home
       connections:
-        name: Connections
+        - name: Connections
 
   - path: "/schema/:id"
     name: Schema
@@ -42,9 +42,9 @@ routes:
       connections: ConnectionInfo
     props:
       maincontent:
-        name: Home
+        - name: Home
       connections:
-        name: Connections
+        - name: Connections
 
   - path: "/table/:id"
     name: Table
@@ -53,9 +53,9 @@ routes:
       connections: ConnectionInfo
     props:
       maincontent:
-        name: Home
+        - name: Home
       connections:
-        name: Connections
+        - name: Connections
 
   - path: "/inspector/table/:table/row/:id"
     name: Dataset
@@ -64,8 +64,7 @@ routes:
       connections: ConnectionInfo
     props:
       maincontent:
-        name: Home
+        - id: Home
+        - table: table
       connections:
-        name: Connections
-
-
+        - name: Connections

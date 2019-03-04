@@ -32,7 +32,7 @@ public class RouterConfig {
 
         Map<String, String> components = new TreeMap<>();
 
-        Map<String, Map> props = new TreeMap<>();
+        Map<String, List<Map>> props = new TreeMap<>();
 
         Set<RouterConfigRecord> children;
     }
