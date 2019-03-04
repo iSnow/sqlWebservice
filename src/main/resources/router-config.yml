@@ -37,7 +37,7 @@ routes:
   - path: "/inspector/table/:table/row/:id"
     name: Dataset
     components:
-      maincontent: SQLEditorLayout
+      maincontent: DynamicConfigurableComponent
       connections: ConnectionInfo
 
 
