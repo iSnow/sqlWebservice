@@ -34,7 +34,7 @@ routes:
       maincontent: SQLEditorLayout
       connections: ConnectionInfo
 
-  - path: "/inspector/:table/row/:id"
+  - path: "/inspector/table/:table/row/:id"
     name: Dataset
     components:
       maincontent: SQLEditorLayout
