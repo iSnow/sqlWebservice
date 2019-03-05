@@ -41,7 +41,7 @@ public class ConfigService {
     @Path("/table/{tableid}")
     @Produces(MediaType.APPLICATION_JSON)
     @SneakyThrows
-    public List<LayoutConfig> getTableConfig(
+    public Map getTableConfig(
             @PathParam("tableid") String tableId,
             @QueryParam("columnsToShow") Set<String> columnsToShow
     ) throws JsonProcessingException {
@@ -99,8 +99,10 @@ public class ConfigService {
         addToBox(checkboxes, layouts);
         List<ColumnLayoutConfig> boxes = filterEntities (configs, "box");
         layouts.addAll(boxes);
-
-        return layouts;
+        Map retVal = new TreeMap();
+        retVal.put("id", tableId);
+        retVal.put("data", layouts);
+        return retVal;
     }
 
     private static void addToBox(List<ColumnLayoutConfig> paragraphs, List<LayoutConfig> layouts) {
