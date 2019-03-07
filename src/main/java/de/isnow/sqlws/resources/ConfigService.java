@@ -7,6 +7,7 @@ import de.isnow.sqlws.SqlWsApplication;
 import de.isnow.sqlws.model.*;
 import de.isnow.sqlws.model.config.RouterConfig;
 import de.isnow.sqlws.model.config.SqlRestConfiguration;
+import de.isnow.sqlws.model.layoutModel.*;
 import lombok.SneakyThrows;
 
 import javax.servlet.ServletContext;
@@ -44,7 +45,7 @@ public class ConfigService {
     public Map getTableConfig(
             @PathParam("tableid") String tableId,
             @QueryParam("columnsToShow") Set<String> columnsToShow
-    ) throws JsonProcessingException {
+    )  {
         WsTable table = WsTable.get(tableId);
         if (null == table) {
             return null;
@@ -52,79 +53,82 @@ public class ConfigService {
         if ((null == columnsToShow) || (columnsToShow.isEmpty()))
             columnsToShow = table.getColumnsByName().keySet();
         Map<String,List<WsColumn>> colMap = table.getColumnsByType();
-        List<ColumnLayoutConfig> configs = new ArrayList<>();
+        List<LmObject> configs = new ArrayList<>();
         int checkBoxCounter = 0;
         int paragraphCounter = 0;
         int lobCounter = 0;
         for (String type : colMap.keySet()) {
             List<WsColumn> cols = colMap.get(type);
             for (WsColumn col : cols) {
-                ColumnLayoutConfig cfg = new ColumnLayoutConfig();
-                cfg.setType(type);
-                cfg.setColumnName(col.getName());
-                cfg.setColumnId(col.getId());
+                LmObject cfg;
                 switch (type) {
                     case "bit":
-                        cfg.setContainerType("checkbox");
-                        cfg.setCointainerId("checkbox" + checkBoxCounter++);
+                        cfg = new LmCheckBox();
+                        cfg.setContainerId(checkBoxCounter++);
                         break;
                     case "character":
-                        cfg.setContainerType("paragraph");
-                        cfg.setCointainerId("paragraph" + paragraphCounter++);
+                        cfg = new LmParagraph();
+                        cfg.setContainerId(paragraphCounter++);
                         break;
                     case "large_object":
-                        cfg.setContainerType("box");
-                        cfg.setCointainerId("box" + lobCounter++);
+                        cfg = new LmBox();
+                        cfg.setContainerId(lobCounter++);
                         break;
                     case "integer":
-                        cfg.setContainerType("paragraph");
-                        cfg.setCointainerId("paragraph" + paragraphCounter++);
+                        cfg = new LmParagraph();
+                        cfg.setContainerId(paragraphCounter++);
                         break;
                     case "real":
-                        cfg.setContainerType("paragraph");
-                        cfg.setCointainerId("paragraph" + paragraphCounter++);
+                        cfg = new LmParagraph();
+                        cfg.setContainerId(paragraphCounter++);
                         break;
                     case "temporal":
-                        cfg.setContainerType("paragraph");
-                        cfg.setCointainerId("paragraph" + checkBoxCounter++);
+                        cfg = new LmParagraph();
+                        cfg.setContainerId(checkBoxCounter++);
                         break;
+                    default:
+                        cfg = new LmBox();
+                        cfg.setContainerId(lobCounter++);
+                    cfg.setColumnName(col.getName());
+                    cfg.setColumnId(col.getId());
                 }
                 configs.add(cfg);
             }
         }
-        List<LayoutConfig> layouts = new ArrayList<>();
-        List<ColumnLayoutConfig> paragraphs = filterEntities (configs, "paragraph");
+        List<LmObject> layouts = new ArrayList<>();
+        List<LmObject> paragraphs = filterEntities (configs, "paragraph");
         addToBox(paragraphs, layouts);
-        List<ColumnLayoutConfig> checkboxes = filterEntities (configs, "checkbox");
+        List<LmObject> checkboxes = filterEntities (configs, "checkbox");
         addToBox(checkboxes, layouts);
-        List<ColumnLayoutConfig> boxes = filterEntities (configs, "box");
+        List<LmObject> boxes = filterEntities (configs, "box");
         layouts.addAll(boxes);
+        LmLayout wrapper = new LmLayout();
+        wrapper.addChildren(layouts);
         Map retVal = new TreeMap();
         retVal.put("id", tableId);
-        retVal.put("data", layouts);
+        retVal.put("data", wrapper);
         return retVal;
     }
 
-    private static void addToBox(List<ColumnLayoutConfig> paragraphs, List<LayoutConfig> layouts) {
+    private static void addToBox(List<LmObject> paragraphs, List<LmObject> layouts) {
         int numParagraphs = paragraphs.size();
         int numParagraphBoxes = numParagraphs/10+1;
         for (int i = 0; i < numParagraphBoxes; i++) {
-            LayoutConfig cfg = new LayoutConfig();
-            cfg.setContainerType("box");
-            cfg.setCointainerId("box"+i);
+            LmObject cfg = new LmBox();
+            cfg.setContainerId(i);
             int endIdx = (((i+1)*10) > numParagraphs) ? numParagraphs : ((i+1)*10);
-            List<ColumnLayoutConfig> sublist = paragraphs.subList(i*10, endIdx);
-            for (ColumnLayoutConfig lCfg : sublist) {
+            List<LmObject> sublist = paragraphs.subList(i*10, endIdx);
+            for (LmObject lCfg : sublist) {
                 cfg.getChildren().add(lCfg);
             }
             layouts.add(cfg);
         }
     }
 
-    private static List<ColumnLayoutConfig> filterEntities (List<ColumnLayoutConfig> configs, String type) {
-        List<ColumnLayoutConfig> ents = configs
+    private static List<LmObject> filterEntities (List<LmObject> configs, String type) {
+        List<LmObject> ents = configs
                 .stream()
-                .filter((cfg)->{return cfg.getContainerType().equals(type);})
+                .filter((cfg)-> cfg.getType().equals(type))
                 .collect(Collectors.toList());
         return ents;
     }
