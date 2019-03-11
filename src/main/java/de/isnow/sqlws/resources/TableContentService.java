@@ -77,4 +77,37 @@ public class TableContentService {
         response.put("model", table.getColumns());
         return response;
     }
+
+    @GET
+    @Path("/table/{tableid}/row/{pk}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @SneakyThrows
+    public Map getContentsOfRow(
+            @PathParam("tableid") String tableId,
+            @PathParam("pk") String primaryKey,
+            @QueryParam("columnsToShow") Set<String> columnsToShow) {
+        WsTable table = WsTable.get(tableId);
+        if (null == table) {
+            return null;
+        }
+        WsSchema schema = table.getOwningSchema();
+        WsCatalog catalog = schema.getOwningCatalog();
+        WsConnection conn = catalog.getOwningConnection();
+        Map<WsColumn, String> pks = new HashMap<>();
+        List<WsColumn> pkCols = table.getPrimaryKeyColumns();
+        pks.put(pkCols.get(0), primaryKey);
+        PreparedStatement p = DbUtil.createSingleReadQuery(
+                table,
+                pks,
+                columnsToShow,
+                conn.getNativeConnection());
+
+        ResultSet rs = p.executeQuery();
+        int cnt = 0;
+        List retVal = new ArrayList();
+        Map<String, Object> response = RestUtils.createJsonWrapper(retVal);
+        response.put("id", tableId);
+        response.put("model", table.getColumns());
+        return response;
+    }
 }

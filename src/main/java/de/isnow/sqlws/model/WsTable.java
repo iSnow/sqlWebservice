@@ -197,6 +197,14 @@ public class WsTable extends WsObject{
 		return colMap;
 	}
 
+	public List<WsColumn> getPrimaryKeyColumns() {
+		List<WsColumn> pkCols = columns
+				.stream()
+				.filter(WsColumn::isPrimaryKey)
+				.collect(Collectors.toList());
+		return pkCols;
+	}
+
 	@InjectLinks({
 			@InjectLink(
 					resource= TableModelService.class,

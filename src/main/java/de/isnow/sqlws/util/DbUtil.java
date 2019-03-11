@@ -12,6 +12,33 @@ import java.util.stream.Collectors;
 
 public class DbUtil {
 
+
+    @SneakyThrows
+    public static PreparedStatement createSingleReadQuery(
+            WsTable table,
+            Map<WsColumn, String> primaryKeys,
+            Collection<String> columnsToShow,
+            Connection conn) {
+        if (null == columnsToShow)
+            columnsToShow = table.getColumnsByName().keySet();
+        String tableHeadSelect= createTableHeadSelect(table, columnsToShow);
+        StringBuilder sb = new StringBuilder();
+        List<WsColumn> pkCols = table.getPrimaryKeyColumns();
+        List<String> pkClauses = new ArrayList<>();
+        for (WsColumn col : pkCols) {
+            String val = primaryKeys.get(col);
+            if (null != val) {
+                pkClauses.add(col.getName()+" = "+ val);
+            }
+        }
+        sb.append("WHERE ");
+        sb.append(String.join(" AND ", pkClauses));
+        String q = tableHeadSelect+sb.toString();
+        PreparedStatement p = conn.prepareStatement(q);
+        return p;
+    }
+
+
     @SneakyThrows
     public static PreparedStatement createLimitedReadQuery(
             WsTable table,
@@ -34,12 +61,9 @@ public class DbUtil {
             Connection conn) {
         if (null == columnsToShow)
             columnsToShow = table.getColumnsByName().keySet();
+
+        String tableHeadSelect= createTableHeadSelect(table, columnsToShow);
         StringBuilder sb = new StringBuilder();
-        sb.append("SELECT ");
-        String cols = String.join(", ", columnsToShow);
-        sb.append(cols);
-        sb.append(" FROM ");
-        sb.append(table.getFullName());
         if (null != columnFilters) {
             List<String> clauses = new ArrayList<>();
             for (WsColumn col : columnFilters.keySet()) {
@@ -70,8 +94,8 @@ public class DbUtil {
         if (null != numRows)
             //sb.append(" fetch first "+numRows + " rows only");
             sb.append(" limit "+numRows+ " offset "+firstRow);
-
-        PreparedStatement p = conn.prepareStatement(sb.toString());
+        String q = tableHeadSelect+sb.toString();
+        PreparedStatement p = conn.prepareStatement(q);
         int cnt = 1;
 
         if (null != columnFilters) {
@@ -104,7 +128,19 @@ public class DbUtil {
                 }
             }
         }
-        System.out.println(p.toString());
         return p;
+    }
+
+
+    private static String createTableHeadSelect(
+            WsTable table,
+            Collection<String> columnsToShow) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("SELECT ");
+        String cols = String.join(", ", columnsToShow);
+        sb.append(cols);
+        sb.append(" FROM ");
+        sb.append(table.getFullName());
+        return sb.toString();
     }
 }
