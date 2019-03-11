@@ -103,6 +103,7 @@ public class ConfigService {
         List<LmObject> boxes = filterEntities (configs, "box");
         layouts.addAll(boxes);
         LmLayout wrapper = new LmLayout();
+        wrapper.setContainerId(0);
         wrapper.addChildren(layouts);
         Map retVal = new TreeMap();
         retVal.put("id", tableId);
@@ -116,6 +117,7 @@ public class ConfigService {
         for (int i = 0; i < numParagraphBoxes; i++) {
             LmObject cfg = new LmBox();
             cfg.setContainerId(i);
+            cfg.setOrientation(LmObject.Orientation.VERTICAL.toString());
             int endIdx = (((i+1)*10) > numParagraphs) ? numParagraphs : ((i+1)*10);
             List<LmObject> sublist = paragraphs.subList(i*10, endIdx);
             for (LmObject lCfg : sublist) {

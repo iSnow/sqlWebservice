@@ -15,20 +15,20 @@ public class LmObject {
     String type;
 
     @JsonProperty("orientation")
-    private String Orientation;
+    String Orientation;
 
     @JsonProperty("children")
-    private List<LmObject> children = new ArrayList<>();
+    List<LmObject> children = new ArrayList<>();
 
     @JsonProperty("visible")
-    private boolean visible = true;
+    boolean visible = true;
 
     @JsonProperty("id")
-    private String containerId;
+    String containerId;
 
-    private String columnName;
+    String columnName;
 
-    private String columnId;
+    String columnId;
 
     public void addChild(LmObject child) {
         if (null != child)
@@ -47,5 +47,6 @@ public class LmObject {
         HORZONTAL,
         VERTICAL,
         NONE
+
     }
 }
