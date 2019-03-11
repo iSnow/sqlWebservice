@@ -93,6 +93,8 @@ public class TableContentService {
         WsSchema schema = table.getOwningSchema();
         WsCatalog catalog = schema.getOwningCatalog();
         WsConnection conn = catalog.getOwningConnection();
+        if ((null == columnsToShow) || (columnsToShow.isEmpty()))
+            columnsToShow = table.getColumnsByName().keySet();
         Map<WsColumn, String> pks = new HashMap<>();
         List<WsColumn> pkCols = table.getPrimaryKeyColumns();
         pks.put(pkCols.get(0), primaryKey);
@@ -103,9 +105,13 @@ public class TableContentService {
                 conn.getNativeConnection());
 
         ResultSet rs = p.executeQuery();
-        int cnt = 0;
-        List retVal = new ArrayList();
-        Map<String, Object> response = RestUtils.createJsonWrapper(retVal);
+        Map<String, Object> row = new LinkedHashMap<>();
+        if (rs.next()) {
+            for (String name : columnsToShow) {
+                row.put(name, rs.getObject(name));
+            }
+        }
+        Map<String, Object> response = RestUtils.createJsonWrapper(row);
         response.put("id", tableId);
         response.put("model", table.getColumns());
         return response;

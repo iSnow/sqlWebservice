@@ -31,7 +31,7 @@ public class DbUtil {
                 pkClauses.add(col.getName()+" = "+ val);
             }
         }
-        sb.append("WHERE ");
+        sb.append(" WHERE ");
         sb.append(String.join(" AND ", pkClauses));
         String q = tableHeadSelect+sb.toString();
         PreparedStatement p = conn.prepareStatement(q);
