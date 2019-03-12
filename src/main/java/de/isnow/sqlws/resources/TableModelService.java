@@ -7,10 +7,6 @@ import java.util.Set;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.isnow.sqlws.model.WsColumn;
 import de.isnow.sqlws.model.WsTable;
@@ -49,7 +45,7 @@ public class TableModelService {
 		};
 		vmt.setColumns(cols);
 
-		Map<String, Object> response = RestUtils.createJsonWrapper(wst);
+		Map<String, Object> response = RestUtils.createJsonWrapperForCollection(wst);
 		response.put("id", tableId);
 		response.put("model", vmt);
 		return response;

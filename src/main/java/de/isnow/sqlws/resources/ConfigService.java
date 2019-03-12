@@ -89,9 +89,9 @@ public class ConfigService {
                     default:
                         cfg = new LmBox();
                         cfg.setContainerId(lobCounter++);
-                    cfg.setColumnName(col.getName());
-                    cfg.setColumnId(col.getId());
                 }
+                cfg.setColumnName(col.getName());
+                cfg.setColumnId(col.getId());
                 configs.add(cfg);
             }
         }

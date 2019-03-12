@@ -116,7 +116,7 @@ public class RestUtils {
 		return res;
 	}
 
-	public static Map<String, Object> createJsonWrapper(Object obj) {
+	public static Map<String, Object> createJsonWrapperForCollection(Object obj) {
 		Map<String, Object> responseNode = new LinkedHashMap<String, Object>();
 		int size = 0;
 		if (obj instanceof Collection) {
@@ -133,5 +133,22 @@ public class RestUtils {
 		responseNode.put("warnings", 0);
 		return responseNode;
 	}
-	
+
+	public static Map<String, Object> createJsonWrapperForSingleObject(Object obj) {
+		Map<String, Object> responseNode = new LinkedHashMap<String, Object>();
+		int size = 0;
+		if (obj instanceof Collection) {
+			responseNode.put("data", obj);
+			size = ((Collection) obj).size();
+		} else {
+			responseNode.put("data", obj);
+			size = 1;
+		}
+
+		responseNode.put("model", "");
+		responseNode.put("numFound", size);
+		responseNode.put("errors", 0);
+		responseNode.put("warnings", 0);
+		return responseNode;
+	}
 }

@@ -72,7 +72,7 @@ public class TableContentService {
                 cnt++;
             }
         }
-        Map<String, Object> response = RestUtils.createJsonWrapper(retVal);
+        Map<String, Object> response = RestUtils.createJsonWrapperForCollection(retVal);
         response.put("id", tableId);
         response.put("model", table.getColumns());
         return response;
@@ -111,7 +111,7 @@ public class TableContentService {
                 row.put(name, rs.getObject(name));
             }
         }
-        Map<String, Object> response = RestUtils.createJsonWrapper(row);
+        Map<String, Object> response = RestUtils.createJsonWrapperForSingleObject(row);
         response.put("id", tableId);
         response.put("model", table.getColumns());
         return response;
