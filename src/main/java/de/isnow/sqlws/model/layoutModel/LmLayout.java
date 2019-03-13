@@ -9,4 +9,6 @@ public class LmLayout extends LmObject {
     public LmLayout() {
         type = "layout";
     }
+
+    String tableId;
 }

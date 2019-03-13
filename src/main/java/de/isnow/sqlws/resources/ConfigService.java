@@ -1,6 +1,5 @@
 package de.isnow.sqlws.resources;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import de.isnow.sqlws.SqlWsApplication;
@@ -17,7 +16,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -42,10 +43,47 @@ public class ConfigService {
     @Path("/table/{tableid}")
     @Produces(MediaType.APPLICATION_JSON)
     @SneakyThrows
-    public Map getTableConfig(
+    public LmLayout getTableConfig(
             @PathParam("tableid") String tableId,
             @QueryParam("columnsToShow") Set<String> columnsToShow
-    )  {
+    ) {
+        String tableConfigPath = (String)SqlWsApplication.getSqlRestConfig().getFiles().get("tableConfig");
+        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+
+        WsTable table = WsTable.get(tableId);
+        if (null == table) {
+            return null;
+        }
+        WsSchema schema = table.getOwningSchema();
+        WsCatalog catalog = schema.getOwningCatalog();
+        WsConnection conn = catalog.getOwningConnection();
+        String configPath = conn.getName()
+                +File.separatorChar +catalog.getId()
+                +File.separatorChar+schema.getId()
+                +File.separatorChar+table.getId()
+                +".yml";
+        File f = new File(tableConfigPath, configPath);
+        if (f.exists()) {
+            java.nio.file.Path p = f.toPath();
+            List<String> lines = Files.readAllLines(p);
+            String content = String.join("\n", lines);
+
+            LmLayout layout = mapper.readValue(content, LmLayout.class);
+            return layout;
+        } else {
+            LmLayout layout = createTableConfig(tableId, columnsToShow);
+            f.getParentFile().mkdirs();
+            f.createNewFile();
+            FileWriter w = new FileWriter(f);
+            mapper.writerFor(LmLayout.class).writeValue(w, layout);
+            w.close();
+            return layout;
+        }
+    }
+
+
+
+    public LmLayout createTableConfig(String tableId, Set<String> columnsToShow)  {
         WsTable table = WsTable.get(tableId);
         if (null == table) {
             return null;
@@ -64,31 +102,31 @@ public class ConfigService {
                 switch (type) {
                     case "bit":
                         cfg = new LmCheckBox();
-                        cfg.setContainerId(checkBoxCounter++);
+                        cfg.contId(checkBoxCounter++);
                         break;
                     case "character":
                         cfg = new LmParagraph();
-                        cfg.setContainerId(paragraphCounter++);
+                        cfg.contId(paragraphCounter++);
                         break;
                     case "large_object":
                         cfg = new LmBox();
-                        cfg.setContainerId(lobCounter++);
+                        cfg.contId(lobCounter++);
                         break;
                     case "integer":
                         cfg = new LmParagraph();
-                        cfg.setContainerId(paragraphCounter++);
+                        cfg.contId(paragraphCounter++);
                         break;
                     case "real":
                         cfg = new LmParagraph();
-                        cfg.setContainerId(paragraphCounter++);
+                        cfg.contId(paragraphCounter++);
                         break;
                     case "temporal":
                         cfg = new LmParagraph();
-                        cfg.setContainerId(checkBoxCounter++);
+                        cfg.contId(checkBoxCounter++);
                         break;
                     default:
                         cfg = new LmBox();
-                        cfg.setContainerId(lobCounter++);
+                        cfg.contId(lobCounter++);
                 }
                 cfg.setColumnName(col.getName());
                 cfg.setColumnId(col.getId());
@@ -103,12 +141,10 @@ public class ConfigService {
         List<LmObject> boxes = filterEntities (configs, "box");
         layouts.addAll(boxes);
         LmLayout wrapper = new LmLayout();
-        wrapper.setContainerId(0);
+        wrapper.contId(0);
         wrapper.addChildren(layouts);
-        Map retVal = new TreeMap();
-        retVal.put("id", tableId);
-        retVal.put("data", wrapper);
-        return retVal;
+        wrapper.setTableId(tableId);
+        return wrapper;
     }
 
     private static void addToBox(List<LmObject> paragraphs, List<LmObject> layouts) {
@@ -116,7 +152,7 @@ public class ConfigService {
         int numParagraphBoxes = numParagraphs/10+1;
         for (int i = 0; i < numParagraphBoxes; i++) {
             LmObject cfg = new LmBox();
-            cfg.setContainerId(i);
+            cfg.contId(i);
             cfg.setOrientation(LmObject.Orientation.VERTICAL.toString());
             int endIdx = (((i+1)*10) > numParagraphs) ? numParagraphs : ((i+1)*10);
             List<LmObject> sublist = paragraphs.subList(i*10, endIdx);

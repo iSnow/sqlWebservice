@@ -39,9 +39,17 @@ public class LmObject {
         children.forEach(this::addChild);
     }
 
-    public void setContainerId (int id) {
+    /*public void setId(String id) {
+        containerId = id;
+    }*/
+
+
+    public void contId (int id) {
         containerId = type+"-"+id;
     }
+    /*public void setId(int id) {
+        containerId = type+"-"+id;
+    }*/
 
     public enum Orientation {
         HORZONTAL,
