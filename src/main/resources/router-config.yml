@@ -4,7 +4,7 @@ routes:
     name: Home
     components:
       maincontent: SQLEditorLayout
-      connections: ConnectionInfo
+      connections: SchemaSelect
     children:
       - path: ''
         components:
@@ -14,13 +14,13 @@ routes:
   - path: "/connections"
     name: Connections
     components:
-      default: ConnectionInfo
+      default: SchemaSelect
 
   - path: "/connection/:id"
     name: Connection
     components:
       maincontent: SQLEditorLayout
-      connections: ConnectionInfo
+      connections: SchemaSelect
     props:
       maincontent: true
       connections: true
@@ -29,7 +29,18 @@ routes:
     name: Schema
     components:
       maincontent: SQLEditorLayout
-      connections: ConnectionInfo
+      connections: SchemaSelect
+      tables: TableSelect
+    props:
+      maincontent: true
+      connections: true
+      tables: true
+
+  - path: "/schema/:schema/table/:table"
+    name: Schema
+    components:
+      maincontent: SQLEditorLayout
+      connections: SchemaSelect
     props:
       maincontent: true
       connections: true
@@ -38,16 +49,16 @@ routes:
     name: Table
     components:
       maincontent: SQLEditorLayout
-      connections: ConnectionInfo
+      connections: SchemaSelect
     props:
       maincontent: true
       connections: true
 
-  - path: "/inspector/table/:table/row/:id"
+  - path: "/inspector/schema/:schema/table/:table/row/:id"
     name: Dataset
     components:
       maincontent: DynamicConfigurableComponent
-      connections: ConnectionInfo
+      connections: SchemaSelect
     props:
       maincontent: true
       connections: true

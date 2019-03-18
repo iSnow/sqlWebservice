@@ -35,6 +35,7 @@ import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.jpa.HibernatePersistenceProvider;
 import schemacrawler.schemacrawler.*;
+import schemacrawler.utility.SchemaCrawlerUtility;
 
 @Slf4j
 public class SqlWsApplication extends Application<SqlWsConfiguration> {
@@ -177,7 +178,9 @@ public class SqlWsApplication extends Application<SqlWsConfiguration> {
 		// time taken to crawl the schema
 		SchemaInfoLevel detailLevel = SchemaInfoLevelBuilder.maximum();
 		SchemaCrawlerOptionsBuilder bldr = SchemaCrawlerOptionsBuilder.builder();
-		final SchemaCrawlerOptions options = bldr.withSchemaInfoLevel(detailLevel).toOptions();
+		final SchemaCrawlerOptions options = bldr
+				.withSchemaInfoLevel(detailLevel)
+				.toOptions();
         //options.setSchemaInfoLevel(SchemaCrawlerOptionsBuilder.withMaximumSchemaInfoLevel());
 		//options.setRoutineInclusionRule(new ExcludeAll());
 		//options.setSchemaInclusionRule(new RegularExpressionInclusionRule("PUBLIC.BOOKS"));
