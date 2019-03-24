@@ -36,6 +36,7 @@ package de.isnow.sqlws.model;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.isnow.sqlws.resources.ColumnModelService;
+import lombok.Data;
 import lombok.Getter;
 import org.glassfish.jersey.linking.Binding;
 import org.glassfish.jersey.linking.InjectLink;
@@ -45,7 +46,10 @@ import schemacrawler.schema.ColumnDataType;
 
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.core.Link;
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * @author tbayer
@@ -56,7 +60,7 @@ import java.util.List;
 		fieldVisibility = JsonAutoDetect.Visibility.ANY,
 		getterVisibility = JsonAutoDetect.Visibility.NONE,
 		setterVisibility = JsonAutoDetect.Visibility.NONE)
-
+@Data
 public class WsColumn extends WsObject {
 
 	@JsonIgnore
@@ -85,6 +89,8 @@ public class WsColumn extends WsObject {
 
 	@Getter
 	private boolean primaryKey, foreignKey;
+
+	private Set<String> referencedBy = new TreeSet<>();
 	
 	public WsColumn() {
 		register(this);
@@ -114,6 +120,14 @@ public class WsColumn extends WsObject {
 		return (WsColumn)registries
 				.get(WsColumn.class)
 				.get(id);
+	}
+
+	public void addReferencedBy(WsColumn other) {
+		referencedBy.add(other.fullName);
+	}
+
+	public void addReferencedBy(Collection<WsColumn> others) {
+		others.forEach((c) -> referencedBy.add(c.fullName));
 	}
 
 	@InjectLinks({

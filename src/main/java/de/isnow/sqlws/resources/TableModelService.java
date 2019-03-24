@@ -1,9 +1,6 @@
 package de.isnow.sqlws.resources;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -25,29 +22,15 @@ public class TableModelService {
 			@PathParam("id") String tableId) {
 
 		WsTable wst = WsTable.get(tableId);
-
-		VmTable vmt = new VmTable();
-		Set<VmColumn> cols = new HashSet<>();
-		int cnt = 0;
-		if (null != wst.getColumns()) {
-			for (WsColumn c : wst.getColumns()) {
-				VmColumn col = new VmColumn();
-				col.setName(c.getName());
-				col.setFullName(c.getFullName());
-				//if ((c.isPrimaryKey()) || (c.isForeignKey())) {
-				if (c.isForeignKey()) {
-					col.setVisible(false);
-				} else {
-					col.setPosition(cnt++);
-				}
-				cols.add(col);
-			}
-		};
-		vmt.setColumns(cols);
+		VmTable vmt = VmTable.fromWsTable(wst);
+		vmt.setForeignKeys(wst);
+		List<WsTable> children = wst.getChildTables();
 
 		Map<String, Object> response = RestUtils.createJsonWrapperForCollection(wst);
 		response.put("id", tableId);
 		response.put("model", vmt);
+		response.put("children", children);
+		response.put("constraints", wst.getConstraint());
 		return response;
 	}
 
