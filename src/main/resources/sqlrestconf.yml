@@ -2,11 +2,11 @@
 
 ---
 connectionConfig:
-  database: <DATABASE-NAME>
-  jdbc-driver-class: <JDBC-DRIVER-CLASS-NAME>
-  database-url: jdbc:<JDBC-STRING>
-  user: <USER>
-  password: <PASSWORD>
+  database: postgres-test
+  jdbc-driver-class: org.postgresql.Driver
+  database-url: jdbc:postgresql://localhost:5445/crypto?currentschema=coins
+  user: postgres
+  password: postgres
 
 internalStoreConfig:
   database: sqlRestConfigStore
@@ -17,7 +17,7 @@ internalStoreConfig:
 
 application:
   verbose: true
-  routeConfig: router-config.yml
+  routeConfig: /home/janderj1/workspace/sqlWebservice/src/main/resources/router-config.yml
 
 files:
-  tableConfig: table-config/
+  tableConfig: /home/janderj1/workspace/sqlWebservice/src/main/resources/table-config/

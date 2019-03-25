@@ -91,7 +91,10 @@ public class WsColumn extends WsObject {
 	private boolean primaryKey, foreignKey;
 
 	private Set<String> referencedBy = new TreeSet<>();
-	
+
+	private String references;
+
+
 	public WsColumn() {
 		register(this);
 	}

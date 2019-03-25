@@ -1,5 +1,6 @@
 package de.isnow.sqlws.model.viewModel;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.isnow.sqlws.model.WsColumn;
 import de.isnow.sqlws.model.WsTable;
@@ -12,6 +13,10 @@ import schemacrawler.schema.ForeignKeyColumnReference;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@JsonAutoDetect(
+        fieldVisibility = JsonAutoDetect.Visibility.ANY,
+        getterVisibility = JsonAutoDetect.Visibility.NONE,
+        setterVisibility = JsonAutoDetect.Visibility.NONE)
 @Getter
 public class VmTable extends VmObject {
 
@@ -41,13 +46,8 @@ public class VmTable extends VmObject {
         int cnt = 0;
         if (null != wst.getColumns()) {
             for (WsColumn c : wst.getColumns()) {
-                VmColumn col = new VmColumn();
-                col.setName(c.getName());
-                col.setFullName(c.getFullName());
-                //if ((c.isPrimaryKey()) || (c.isForeignKey())) {
-                if (c.isForeignKey()) {
-                    col.setVisible(false);
-                } else {
+                VmColumn col = VmColumn.fromWsColumn(c);
+                if (!c.isForeignKey()) {
                     col.setPosition(cnt++);
                 }
                 cols.add(col);

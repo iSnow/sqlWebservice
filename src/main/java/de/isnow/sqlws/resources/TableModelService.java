@@ -5,10 +5,8 @@ import java.util.*;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
-import de.isnow.sqlws.model.WsColumn;
 import de.isnow.sqlws.model.WsTable;
 import de.isnow.sqlws.model.WsSchema;
-import de.isnow.sqlws.model.viewModel.VmColumn;
 import de.isnow.sqlws.model.viewModel.VmTable;
 import de.isnow.sqlws.util.RestUtils;
 
@@ -26,11 +24,11 @@ public class TableModelService {
 		vmt.setForeignKeys(wst);
 		List<WsTable> children = wst.getChildTables();
 
-		Map<String, Object> response = RestUtils.createJsonWrapperForCollection(wst);
+		Map<String, Object> response = RestUtils.createJsonWrapperForSingleObject(vmt);
 		response.put("id", tableId);
-		response.put("model", vmt);
-		response.put("children", children);
-		response.put("constraints", wst.getConstraint());
+		//response.put("model", vmt);
+		//response.put("children", children);
+		response.put("constraints", wst.getConstraints());
 		return response;
 	}
 

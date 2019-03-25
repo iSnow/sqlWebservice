@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import de.isnow.sqlws.resources.ColumnModelService;
 import de.isnow.sqlws.resources.TableContentService;
 import lombok.Data;
+import lombok.ToString;
 import org.glassfish.jersey.linking.Binding;
 import org.glassfish.jersey.linking.InjectLink;
 import org.glassfish.jersey.linking.InjectLink.Style;
@@ -31,6 +32,7 @@ import schemacrawler.schema.*;
 @JsonIgnoreProperties({
 		"filters"
 })
+@ToString(of={"table", "owningSchema"})
 public class WsTable extends WsObject{
 
 	@JsonIgnore
@@ -56,10 +58,10 @@ public class WsTable extends WsObject{
 	@Getter
 	private Map<String, WsColumn> columnsByName = new LinkedHashMap<>();
 
-	@Getter
+	/*@Getter
 	@JsonIgnore
 	private Map<String, Relation> relations = new HashMap<>();
-
+*/
 	@Getter
 	@JsonIgnore
 	private Collection<Index> indexes;
@@ -67,7 +69,12 @@ public class WsTable extends WsObject{
 	@Getter
 	@JsonIgnore
 	private Collection<Table> childTables;
-*&
+*/
+
+	@Getter
+	Set<WsForeignKey> foreignKeys;
+
+
 	@Getter
 	@JsonIgnore
 	Collection<TableConstraint> tableConstraints;
@@ -201,24 +208,42 @@ public class WsTable extends WsObject{
 		return pkCols;
 	}
 
-	public Collection<ForeignKey> getForeignKeys() {
+	/*public Collection<ForeignKey> getForeignKeys() {
 		return table.getForeignKeys();
-	}
+	}*/
 
 	public List<WsTable> getChildTables() {
-		Registry<WsObject> reg = registries.get(WsTable.class);
-		if (null == reg)
+		Registry<WsObject> tablesReg = registries.get(WsTable.class);
+		Registry<WsObject> columnReg = registries.get(WsColumn.class);
+		if (null == tablesReg)
 			return null;
 		List<WsTable> children = table.getRelatedTables(TableRelationshipType.child)
 			.stream()
 			.map((t) -> {
 				String idString = WsObject.idString(t);
-				return (WsTable)reg.get(idString);})
+				return (WsTable)tablesReg.get(idString);})
 			.collect(Collectors.toList());
+		List<WsForeignKey> fks = parseForeignKeys ();
+		children.stream().forEach((c) -> {
+			String childId = c.getId();
+			List<WsForeignKey> matchingFks = fks.stream().filter((k) -> {
+				if (null == k.getChildTableKey())
+					return false;
+				return k.getChildTableKey().equalsIgnoreCase(childId);
+			}).collect(Collectors.toList());
+			if (matchingFks.size() > 0) {
+				matchingFks.get(0).primaryForeignKeyRelationships.forEach((k) -> {
+					WsColumn col = (WsColumn)columnReg.get(k.get("fk"));
+					col.setReferences(k.get("pk"));
+					System.out.println (k);
+				});
+			}
+		});
+		children.forEach(System.err::println);
 		return children;
 	}
 
-	public List<TableConstraint> getConstraint() {
+	public List<TableConstraint> getConstraints() {
 		Collection<TableConstraint> tableConstraints = table.getTableConstraints();
 		List<TableConstraint> constraints = new ArrayList<>(tableConstraints);
 		return constraints;
@@ -236,6 +261,7 @@ public class WsTable extends WsObject{
 				List<ForeignKeyColumnReference> refs = fk.getColumnReferences();
 				refs.forEach((r) -> {
 					String fkc = r.getForeignKeyColumn().getFullName();
+					k.setChildTableKey(r.getForeignKeyColumn().getParent().getFullName());
 					String pkc = r.getPrimaryKeyColumn().getFullName();
 					List <WsColumn> pKCols = this.columns
 							.stream()
@@ -243,7 +269,7 @@ public class WsTable extends WsObject{
 							.collect(Collectors.toList());
 					WsColumn fKCol =  colsRegistry.get(fkc);
 					pKCols.forEach((c)-> c.addReferencedBy(fKCol));
-					System.out.println(pKCols);
+					//System.out.println(pKCols);
 					Map<String, String> kv = new LinkedHashMap<>();
 					kv.put("pk", pkc);
 					kv.put("fk", fkc);
