@@ -56,8 +56,8 @@ routes:
 
   - path: "/inspector/schema/:schema/table/:table/row/:row"
     name: Dataset
-    properties: 
-      data:
+    meta:
+      viewProperties:
         tableRow: object
         tableModel: object
         selfLink: string

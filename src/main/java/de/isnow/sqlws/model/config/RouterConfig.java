@@ -30,7 +30,7 @@ public class RouterConfig {
 
         String name;
 
-        Map<String, Object> properties = new TreeMap<>();
+        Map<String, Object> meta = new TreeMap<>();
 
         Map<String, String> components = new TreeMap<>();
 
