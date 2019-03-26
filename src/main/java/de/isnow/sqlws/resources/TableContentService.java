@@ -79,18 +79,24 @@ public class TableContentService {
     }
 
     @GET
-    @Path("/table/{tableid}/row/{pk}")
+    @Path("schema/{schemaid}/table/{tableid}/row/{pk}")
     @Produces(MediaType.APPLICATION_JSON)
     @SneakyThrows
     public Map getContentsOfRow(
+            @PathParam("schemaid") String schemaId,
             @PathParam("tableid") String tableId,
             @PathParam("pk") String primaryKey,
             @QueryParam("columnsToShow") Set<String> columnsToShow) {
+        WsSchema schema = WsSchema.get(schemaId);
+        if (null == schema)
+            return null;
         WsTable table = WsTable.get(tableId);
         if (null == table) {
             return null;
         }
-        WsSchema schema = table.getOwningSchema();
+        WsSchema schema2 = table.getOwningSchema();
+        if (!schema2.equals(schema))
+            return null;
         WsCatalog catalog = schema.getOwningCatalog();
         WsConnection conn = catalog.getOwningConnection();
         if ((null == columnsToShow) || (columnsToShow.isEmpty()))

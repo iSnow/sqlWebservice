@@ -61,6 +61,18 @@ routes:
         tableRow: object
         tableModel: object
         selfLink: string
+      layoutRoutes:
+        layout-0:
+          url: /api/v1/data/schema/:schema/table/:table/row/:row
+          method: GET
+          parameters:
+            schema: routeProperties.schema
+            table: routeProperties.table
+            row: routeProperties.row
+          query:
+            format: 'object'
+            depth:  '1'
+
     components:
       maincontent: DynamicConfigurableComponent
       connections: SchemaSelect
