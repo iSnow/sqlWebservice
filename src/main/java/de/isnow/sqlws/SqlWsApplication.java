@@ -1,9 +1,6 @@
 package de.isnow.sqlws;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
-import java.nio.file.Files;
 import java.util.*;
 
 import javax.persistence.*;
@@ -13,29 +10,28 @@ import javax.servlet.FilterRegistration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
+
 import de.isnow.sqlws.db.WsPersistenceUnitInfo;
 import de.isnow.sqlws.model.WsConnection;
 import de.isnow.sqlws.model.config.ConnectionConfig;
-import de.isnow.sqlws.model.config.RouterConfig;
 import de.isnow.sqlws.model.config.SqlRestConfiguration;
 import de.isnow.sqlws.model.config.SqlRestConfigurationConnection;
 import de.isnow.sqlws.resources.ObjectMapperContextResolver;
-import io.dropwizard.assets.AssetsBundle;
-import lombok.Getter;
-import lombok.SneakyThrows;
 import org.eclipse.jetty.servlets.CrossOriginFilter;
 import org.glassfish.jersey.linking.DeclarativeLinkingFeature;
 
 import io.dropwizard.Application;
+import io.dropwizard.assets.AssetsBundle;
 import io.dropwizard.configuration.ResourceConfigurationSourceProvider;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import io.federecio.dropwizard.swagger.SwaggerBundle;
 import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
+import lombok.Getter;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.jpa.HibernatePersistenceProvider;
 import schemacrawler.schemacrawler.*;
-import schemacrawler.utility.SchemaCrawlerUtility;
 
 @Slf4j
 public class SqlWsApplication extends Application<SqlWsConfiguration> {

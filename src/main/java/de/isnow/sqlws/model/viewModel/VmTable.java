@@ -23,8 +23,10 @@ public class VmTable extends VmObject {
     @JsonProperty("columns")
     Set<VmColumn> columns = new LinkedHashSet<>();
 
-    @JsonProperty("primaryForeignKeys")
+    @JsonProperty("primaryForeignKeyRelations")
     List<VmForeignKey> fkList = new ArrayList<>();
+
+    Set<VmTable> children = new LinkedHashSet<>();
 
     public void setColumns(Collection<VmColumn> cols) {
         columns = new LinkedHashSet<>(cols
@@ -38,11 +40,18 @@ public class VmTable extends VmObject {
         setColumns(columns);
     }
 
-    public static VmTable fromWsTable(WsTable wst) {
+    public static VmTable fromWsTable(
+            WsTable wst,
+            int recurseChildTablesDeep,
+            boolean copyForeignKeys) {
         if (null == wst)
             return null;
         VmTable vmt = new VmTable();
-        Set<VmColumn> cols = new HashSet<>();
+        vmt.name = wst.getName();
+        vmt.fullName = wst.getFullName();
+        if (copyForeignKeys)
+            vmt.setForeignKeys(wst);
+        Set<VmColumn> cols = new LinkedHashSet<>();
         int cnt = 0;
         if (null != wst.getColumns()) {
             for (WsColumn c : wst.getColumns()) {
@@ -54,6 +63,13 @@ public class VmTable extends VmObject {
             }
         };
         vmt.setColumns(cols);
+        if (recurseChildTablesDeep > 0) {
+            List<WsTable> children = wst.getChildTables();
+            children.forEach((t) -> {
+                VmTable ct = fromWsTable(t, (recurseChildTablesDeep -1),copyForeignKeys);
+                vmt.children.add(ct);
+            });
+        }
         return vmt;
     }
 

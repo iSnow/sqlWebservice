@@ -111,7 +111,7 @@ public class TableContentService {
                 row.put(name, rs.getObject(name));
             }
         }
-        Map<String, Object> response = RestUtils.createJsonWrapperForSingleObject(row);
+        Map<String, Object> response = RestUtils.createJsonWrapper(row);
         response.put("id", tableId);
         response.put("model", table.getColumns());
         return response;

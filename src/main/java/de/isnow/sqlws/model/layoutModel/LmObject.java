@@ -39,11 +39,6 @@ public class LmObject {
         children.forEach(this::addChild);
     }
 
-    /*public void setId(String id) {
-        containerId = id;
-    }*/
-
-
     public void contId (int id) {
         containerId = type+"-"+id;
     }

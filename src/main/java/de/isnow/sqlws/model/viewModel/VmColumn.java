@@ -30,9 +30,7 @@ public class VmColumn extends VmObject {
         col.references = wsc.getReferences();
         col.visible = !(wsc.isForeignKey());
         col.referencedBy = new ArrayList<>();
-        wsc.getReferencedBy().forEach((c) -> {
-            col.referencedBy.add("+"+c);
-        });
+        col.referencedBy.addAll(wsc.getReferencedBy());
         return col;
     }
 }

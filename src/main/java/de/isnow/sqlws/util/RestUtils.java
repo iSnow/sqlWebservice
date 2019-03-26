@@ -134,7 +134,7 @@ public class RestUtils {
 		return responseNode;
 	}
 
-	public static Map<String, Object> createJsonWrapperForSingleObject(Object obj) {
+	public static Map<String, Object> createJsonWrapper(Object obj) {
 		Map<String, Object> responseNode = new LinkedHashMap<String, Object>();
 		int size = 0;
 		if (obj instanceof Collection) {

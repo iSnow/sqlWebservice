@@ -235,11 +235,9 @@ public class WsTable extends WsObject{
 				matchingFks.get(0).primaryForeignKeyRelationships.forEach((k) -> {
 					WsColumn col = (WsColumn)columnReg.get(k.get("fk"));
 					col.setReferences(k.get("pk"));
-					System.out.println (k);
 				});
 			}
 		});
-		children.forEach(System.err::println);
 		return children;
 	}
 

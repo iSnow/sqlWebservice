@@ -54,8 +54,13 @@ routes:
       maincontent: true
       connections: true
 
-  - path: "/inspector/schema/:schema/table/:table/row/:id"
+  - path: "/inspector/schema/:schema/table/:table/row/:row"
     name: Dataset
+    properties: 
+      data:
+        tableRow: object
+        tableModel: object
+        selfLink: string
     components:
       maincontent: DynamicConfigurableComponent
       connections: SchemaSelect
