@@ -69,11 +69,11 @@ public class WsTable extends WsObject{
 	@Getter
 	@JsonIgnore
 	private Collection<Table> childTables;
-*/
+
 
 	@Getter
 	Set<WsForeignKey> foreignKeys;
-
+*/
 
 	@Getter
 	@JsonIgnore
@@ -223,7 +223,7 @@ public class WsTable extends WsObject{
 				String idString = WsObject.idString(t);
 				return (WsTable)tablesReg.get(idString);})
 			.collect(Collectors.toList());
-		List<WsForeignKey> fks = parseForeignKeys ();
+		Set<WsForeignKey> fks = parseForeignKeys ();
 		children.stream().forEach((c) -> {
 			String childId = c.getId();
 			List<WsForeignKey> matchingFks = fks.stream().filter((k) -> {
@@ -247,12 +247,16 @@ public class WsTable extends WsObject{
 		return constraints;
 	}
 
-	public List<WsForeignKey> parseForeignKeys () {
+	public Set<WsForeignKey> getForeignKeys() {
+		return parseForeignKeys ();
+	}
+
+	public Set<WsForeignKey> parseForeignKeys () {
 		Collection<ForeignKey> fks = table.getForeignKeys();
 		if ((null == fks) || (fks.isEmpty()))
-			return new ArrayList<>();
+			return new HashSet<>();
 		Registry<WsColumn> colsRegistry = WsObject.getRegistry(WsColumn.class);
-		List<WsForeignKey> fkList = fks.stream()
+		Set<WsForeignKey> fkSet = fks.stream()
 			.map((fk) -> {
 				WsForeignKey k = new WsForeignKey();
 				List<Map<String, String>> keyRelationsships = new ArrayList<>();
@@ -261,6 +265,7 @@ public class WsTable extends WsObject{
 					String fkc = r.getForeignKeyColumn().getFullName();
 					k.setChildTableKey(r.getForeignKeyColumn().getParent().getFullName());
 					String pkc = r.getPrimaryKeyColumn().getFullName();
+					k.setParentTableKey(r.getPrimaryKeyColumn().getParent().getFullName());
 					List <WsColumn> pKCols = this.columns
 							.stream()
 							.filter((c) -> {return c.fullName.equals(pkc);})
@@ -276,8 +281,8 @@ public class WsTable extends WsObject{
 				k.setPrimaryForeignKeyRelationships(keyRelationsships);
 				return k;
 			})
-			.collect(Collectors.toList());
-		return fkList;
+			.collect(Collectors.toSet());
+		return fkSet;
 	}
 
 	@InjectLinks({
@@ -324,6 +329,8 @@ public class WsTable extends WsObject{
 	public class WsForeignKey {
 
 		String childTableKey;
+
+		String parentTableKey;
 
 		List<Map<String, String>> primaryForeignKeyRelationships;
 	}

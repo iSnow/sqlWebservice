@@ -54,7 +54,7 @@ routes:
       maincontent: true
       connections: true
 
-  - path: "/inspector/schema/:schema/table/:table/row/:row"
+  - path: "/inspector/schema/:schema/table/:table/pk/:pk+"
     name: Dataset
     meta:
       viewProperties:
@@ -63,12 +63,12 @@ routes:
         selfLink: string
       layoutRoutes:
         layout-0:
-          url: /api/v1/data/schema/:schema/table/:table/row/:row
-          method: POST
+          url: /api/v1/data/schema/:schema/table/:table/pk/:pk
+          method: GET
           parameters:
             schema: routeProperties.schema
             table: routeProperties.table
-            row: routeProperties.row
+            pk: routeProperties.pk
           query:
             format: 'object'
             depth:  '1'

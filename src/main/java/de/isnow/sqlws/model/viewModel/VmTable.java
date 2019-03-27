@@ -73,7 +73,7 @@ public class VmTable extends VmObject {
         return vmt;
     }
 
-    public void setForeignKeys(List<WsTable.WsForeignKey> fks) {
+    public void setForeignKeys(Collection<WsTable.WsForeignKey> fks) {
         if (null == fks)
             return;
         fks.forEach((fk) -> fkList.add(VmForeignKey.fromWsForeignKey(fk)));
@@ -81,10 +81,10 @@ public class VmTable extends VmObject {
 
     public void setForeignKeys(WsTable table) {
         if (null != table) {
-           List<WsTable.WsForeignKey> wsfks = table.parseForeignKeys();
-           if (null != wsfks) {
-               setForeignKeys(wsfks);
-           }
+            Set<WsTable.WsForeignKey> wsfks = table.parseForeignKeys();
+            if (null != wsfks) {
+                setForeignKeys(wsfks);
+            }
         }
     }
 

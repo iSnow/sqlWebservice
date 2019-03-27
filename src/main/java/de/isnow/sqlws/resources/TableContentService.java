@@ -10,9 +10,11 @@ import org.jboss.logging.Param;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.PathSegment;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Path("/data")
 public class TableContentService {
@@ -80,15 +82,15 @@ public class TableContentService {
         return response;
     }
 
-    @POST
-    @Path("schema/{schemaid}/table/{tableid}/row/{pk}")
-    @Consumes({MediaType.MULTIPART_FORM_DATA})
+    @GET
+    @Path("schema/{schemaid}/table/{tableid}/pk/{pks: .*}")
+    //@Consumes({MediaType.MULTIPART_FORM_DATA})
     @Produces(MediaType.APPLICATION_JSON)
     @SneakyThrows
     public Map getContentsOfRow(
             @PathParam("schemaid") String schemaId,
             @PathParam("tableid") String tableId,
-            @FormDataParam("pks") Map<String, String> primaryKeys,
+            @PathParam("pks") List<PathSegment> primaryKeys,
             @QueryParam("columnsToShow") Set<String> columnsToShow,
             @QueryParam("depth") int depth) {
         WsSchema schema = WsSchema.get(schemaId);
@@ -101,33 +103,37 @@ public class TableContentService {
         WsSchema schema2 = table.getOwningSchema();
         if (!schema2.equals(schema))
             return null;
+
+        Map<String, String> pks = getKeyValues(primaryKeys);
+        //testPksMatch(table, pks);
+
         WsCatalog catalog = schema.getOwningCatalog();
         WsConnection conn = catalog.getOwningConnection();
-        final Set<String> lColumnsToShow =
-                ((null == columnsToShow) || (columnsToShow.isEmpty())) ?
-                  columnsToShow = table.getColumnsByName().keySet()
-                : columnsToShow;
-        Map<WsColumn, String> pks = new HashMap<>();
-        //TODO generalize for compound PKs. How to encode in URL, or move to POST?
-        /*List<WsColumn> pkCols = table.getPrimaryKeyColumns();
-        pkCols.forEach((c) -> {
-            pks.put(c, primaryKeys.get(c));
-        });*/
+
         Map<String, Object> row = readTableRow(
-              table, pks, columnsToShow, conn, depth);
+              table, pks, columnsToShow, conn);
+
         List<Map> children = new ArrayList<>();
         if (depth > 0) {
-            table.getChildTables().forEach((t) -> {
-                Set<WsTable.WsForeignKey> fkCols = table.getForeignKeys();
+            List<WsTable> cts = table.getChildTables();
+            cts.forEach((t) -> {
+                Set<WsTable.WsForeignKey> fkCols = t.getForeignKeys();
                 fkCols.forEach((c) -> {
-                    c.getPrimaryForeignKeyRelationships().forEach((f) -> {
-                        System.out.println(f);
-                                            });
+                    if (c.getParentTableKey().equals(table.getFullName())) {
+                        c.getPrimaryForeignKeyRelationships().forEach((f) -> {
+                            String pk = f.get("pk");
+                            String fk = f.get("fk");
+
+                            get pk value from 'pks'
+                                    create another map like pks, set fk to value from pks
+                                    readTableRows (could be many)
+                        });
+                    }
                     //pks.put(c.getPrimaryForeignKeyRelationships(), primaryKeys.get(c));
                 });
-                Map<String, Object> cRow = readTableRow(
-                        t, pks, lColumnsToShow, conn, depth);
-                children.add(cRow);
+                //Map<String, Object> cRow = readTableRow(
+                  //      t, pks, lColumnsToShow, conn, depth);
+                //children.add(cRow);
             });
         }
         Map<String, Object> response = RestUtils.createJsonWrapper(row);
@@ -135,6 +141,65 @@ public class TableContentService {
         response.put("model", table.getColumns());
         response.put("children", children);
         return response;
+    }
+
+    private void testPksMatch(WsTable table, Map<String, String> pks) {
+        List<String> pkColNames = table
+                .getPrimaryKeyColumns()
+                .stream()
+                .map(WsObject::getFullName)
+                .collect(Collectors.toList());
+        List<String> inPkNames = new ArrayList<>(pks.keySet());
+        if (!pkColNames.equals(inPkNames)) {
+            throw new IllegalArgumentException("list of primary keys mismatches table primary keys");
+        }
+    }
+
+    private static Map<String, String> getKeyValues(List<PathSegment> pathSegments) {
+        Map<String, String> kvs = new LinkedHashMap<>();
+        String key = null;
+        for (PathSegment seg : pathSegments) {
+            if (null == key)
+                key = seg.getPath();
+            else {
+                kvs.put(key, seg.getPath());
+                key = null;
+            }
+        }
+        return kvs;
+    }
+
+
+    @SneakyThrows
+    private static Map<String, Object> readTableRow(
+            WsTable table,
+            Map<String, String> pks,
+            Set<String> columnsToShow,
+            WsConnection conn) {
+        final Set<String> lColumnsToShow =
+                ((null == columnsToShow) || (columnsToShow.isEmpty())) ?
+                        table.getColumnsByName().keySet()
+                        : columnsToShow;
+
+        Map<String, WsColumn> colsDict = table.getColumnsByName();
+        Map<WsColumn, String> pkCols = new HashMap<>();
+        pks.keySet().stream().forEach((k) -> {
+            pkCols.put(colsDict.get(k), pks.get(k));
+        });
+        PreparedStatement p = DbUtil.createSingleReadQuery(
+                table,
+                pkCols,
+                lColumnsToShow,
+                conn.getNativeConnection());
+
+        ResultSet rs = p.executeQuery();
+        Map<String, Object> row = new LinkedHashMap<>();
+        if (rs.next()) {
+            for (String name : lColumnsToShow) {
+                row.put(name, rs.getObject(name));
+            }
+        }
+        return row;
     }
 
     @SneakyThrows
