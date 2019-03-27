@@ -17,6 +17,7 @@ import de.isnow.sqlws.model.config.ConnectionConfig;
 import de.isnow.sqlws.model.config.SqlRestConfiguration;
 import de.isnow.sqlws.model.config.SqlRestConfigurationConnection;
 import de.isnow.sqlws.resources.ObjectMapperContextResolver;
+import io.dropwizard.forms.MultiPartBundle;
 import org.eclipse.jetty.servlets.CrossOriginFilter;
 import org.glassfish.jersey.linking.DeclarativeLinkingFeature;
 
@@ -71,6 +72,7 @@ public class SqlWsApplication extends Application<SqlWsConfiguration> {
 		});
 		// this path is also configured as assetsRoot in index.js for the NodeJS-based Javascript build tools
 		bootstrap.addBundle(new AssetsBundle("/assets/sqlWebserv/dist", "/", "index.html"));
+		bootstrap.addBundle(new MultiPartBundle());
 	}
 
 	

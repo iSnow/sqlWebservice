@@ -5,6 +5,8 @@ import de.isnow.sqlws.model.*;
 import de.isnow.sqlws.util.DbUtil;
 import de.isnow.sqlws.util.RestUtils;
 import lombok.SneakyThrows;
+import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.jboss.logging.Param;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -78,15 +80,17 @@ public class TableContentService {
         return response;
     }
 
-    @GET
+    @POST
     @Path("schema/{schemaid}/table/{tableid}/row/{pk}")
+    @Consumes({MediaType.MULTIPART_FORM_DATA})
     @Produces(MediaType.APPLICATION_JSON)
     @SneakyThrows
     public Map getContentsOfRow(
             @PathParam("schemaid") String schemaId,
             @PathParam("tableid") String tableId,
-            @PathParam("pk") String primaryKey,
-            @QueryParam("columnsToShow") Set<String> columnsToShow) {
+            @FormDataParam("pks") Map<String, String> primaryKeys,
+            @QueryParam("columnsToShow") Set<String> columnsToShow,
+            @QueryParam("depth") int depth) {
         WsSchema schema = WsSchema.get(schemaId);
         if (null == schema)
             return null;
@@ -99,11 +103,48 @@ public class TableContentService {
             return null;
         WsCatalog catalog = schema.getOwningCatalog();
         WsConnection conn = catalog.getOwningConnection();
-        if ((null == columnsToShow) || (columnsToShow.isEmpty()))
-            columnsToShow = table.getColumnsByName().keySet();
+        final Set<String> lColumnsToShow =
+                ((null == columnsToShow) || (columnsToShow.isEmpty())) ?
+                  columnsToShow = table.getColumnsByName().keySet()
+                : columnsToShow;
         Map<WsColumn, String> pks = new HashMap<>();
-        List<WsColumn> pkCols = table.getPrimaryKeyColumns();
-        pks.put(pkCols.get(0), primaryKey);
+        //TODO generalize for compound PKs. How to encode in URL, or move to POST?
+        /*List<WsColumn> pkCols = table.getPrimaryKeyColumns();
+        pkCols.forEach((c) -> {
+            pks.put(c, primaryKeys.get(c));
+        });*/
+        Map<String, Object> row = readTableRow(
+              table, pks, columnsToShow, conn, depth);
+        List<Map> children = new ArrayList<>();
+        if (depth > 0) {
+            table.getChildTables().forEach((t) -> {
+                Set<WsTable.WsForeignKey> fkCols = table.getForeignKeys();
+                fkCols.forEach((c) -> {
+                    c.getPrimaryForeignKeyRelationships().forEach((f) -> {
+                        System.out.println(f);
+                                            });
+                    //pks.put(c.getPrimaryForeignKeyRelationships(), primaryKeys.get(c));
+                });
+                Map<String, Object> cRow = readTableRow(
+                        t, pks, lColumnsToShow, conn, depth);
+                children.add(cRow);
+            });
+        }
+        Map<String, Object> response = RestUtils.createJsonWrapper(row);
+        response.put("id", tableId);
+        response.put("model", table.getColumns());
+        response.put("children", children);
+        return response;
+    }
+
+    @SneakyThrows
+    private static Map<String, Object> readTableRow(
+            WsTable table,
+            Map<WsColumn, String> pks,
+            Set<String> columnsToShow,
+            WsConnection conn,
+            int depth) {
+
         PreparedStatement p = DbUtil.createSingleReadQuery(
                 table,
                 pks,
@@ -117,9 +158,6 @@ public class TableContentService {
                 row.put(name, rs.getObject(name));
             }
         }
-        Map<String, Object> response = RestUtils.createJsonWrapper(row);
-        response.put("id", tableId);
-        response.put("model", table.getColumns());
-        return response;
+        return row;
     }
 }
