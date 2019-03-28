@@ -58,6 +58,10 @@ public class WsTable extends WsObject{
 	@Getter
 	private Map<String, WsColumn> columnsByName = new LinkedHashMap<>();
 
+	@JsonIgnore
+	@Getter
+	private Map<String, WsColumn> columnsByFullName = new LinkedHashMap<>();
+
 	/*@Getter
 	@JsonIgnore
 	private Map<String, Relation> relations = new HashMap<>();
@@ -132,6 +136,7 @@ public class WsTable extends WsObject{
 				.collect(Collectors.toList()));
 		for (WsColumn column : columns) {
 			columnsByName.put(column.getName(), column);
+			columnsByFullName.put(column.getFullName(), column);
 		}
 	}
 
@@ -208,9 +213,23 @@ public class WsTable extends WsObject{
 		return pkCols;
 	}
 
-	/*public Collection<ForeignKey> getForeignKeys() {
-		return table.getForeignKeys();
-	}*/
+	public List<WsColumn> getForeignKeyColumns() {
+		List<WsColumn> pkCols = columns
+				.stream()
+				.filter(WsColumn::isForeignKey)
+				.collect(Collectors.toList());
+		return pkCols;
+	}
+
+	public WsColumn getColumnByFullName(String fullName) {
+		List<WsColumn> pkCols = columns
+				.stream()
+				.filter((c) -> c.getFullName().equals(fullName))
+				.collect(Collectors.toList());
+		if (pkCols.isEmpty())
+			return null;
+		return pkCols.get(0);
+	}
 
 	public List<WsTable> getChildTables() {
 		Registry<WsObject> tablesReg = registries.get(WsTable.class);

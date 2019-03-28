@@ -11,8 +11,10 @@ import org.jboss.logging.Param;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.PathSegment;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -104,7 +106,7 @@ public class TableContentService {
         if (!schema2.equals(schema))
             return null;
 
-        Map<String, String> pks = getKeyValues(primaryKeys);
+        final Map<String, String> pks = getKeyValues(primaryKeys);
         //testPksMatch(table, pks);
 
         WsCatalog catalog = schema.getOwningCatalog();
@@ -113,27 +115,12 @@ public class TableContentService {
         Map<String, Object> row = readTableRow(
               table, pks, columnsToShow, conn);
 
-        List<Map> children = new ArrayList<>();
+        Map<String, List<Map<String, Object>>> children = new TreeMap<>();
         if (depth > 0) {
             List<WsTable> cts = table.getChildTables();
             cts.forEach((t) -> {
-                Set<WsTable.WsForeignKey> fkCols = t.getForeignKeys();
-                fkCols.forEach((c) -> {
-                    if (c.getParentTableKey().equals(table.getFullName())) {
-                        c.getPrimaryForeignKeyRelationships().forEach((f) -> {
-                            String pk = f.get("pk");
-                            String fk = f.get("fk");
-
-                            get pk value from 'pks'
-                                    create another map like pks, set fk to value from pks
-                                    readTableRows (could be many)
-                        });
-                    }
-                    //pks.put(c.getPrimaryForeignKeyRelationships(), primaryKeys.get(c));
-                });
-                //Map<String, Object> cRow = readTableRow(
-                  //      t, pks, lColumnsToShow, conn, depth);
-                //children.add(cRow);
+                List<Map<String, Object>> values = readDependentTable (table, t, pks, columnsToShow, conn);
+                children.put(t.getFullName(), values);
             });
         }
         Map<String, Object> response = RestUtils.createJsonWrapper(row);
@@ -169,6 +156,81 @@ public class TableContentService {
         return kvs;
     }
 
+    @SneakyThrows
+    private static List<Map<String, Object>> readDependentTable (
+            WsTable parentTable,
+            WsTable childTable,
+            Map<String, String> pkVals,
+            Set<String> columnsToShow,
+            WsConnection conn) {
+        List<Map<String, Object>> retVal = new ArrayList<>();
+        final Set<String> lColumnsToShow =
+                ((null == columnsToShow) || (columnsToShow.isEmpty())) ?
+                        childTable.getColumnsByName().keySet()
+                        : columnsToShow;
+
+        final Map<WsColumn, WsColumn> childPks = new HashMap<>();
+        Set<WsTable.WsForeignKey> fkCols = childTable.getForeignKeys();
+        fkCols.forEach((c) -> {
+            if (c.getParentTableKey().equals(parentTable.getFullName())) {
+                c.getPrimaryForeignKeyRelationships().forEach((f) -> {
+                    WsColumn pfkCol = parentTable.getColumnByFullName(f.get("pk"));
+                    WsColumn ffkCol = childTable.getColumnByFullName(f.get("fk"));
+                    childPks.put(pfkCol, ffkCol);
+                    try {
+                        PreparedStatement s = DbUtil.createChildTableReadQuery(
+                                childTable, childPks, pkVals,
+                                null, conn.getNativeConnection());
+                        ResultSet rs = s.executeQuery();
+                        while (rs.next()) {
+                            Map<String, Object> row = new LinkedHashMap<>();
+                            for (String name : lColumnsToShow) {
+                                row.put(name, rs.getObject(name));
+                            }
+                            retVal.add(row);
+                        }
+                    } catch (SQLException ex) {
+                        ex.printStackTrace();
+                    }
+
+                });
+            }
+        });
+
+        return retVal;
+    }
+
+    /*@SneakyThrows
+    private static Map<String, Object> readDependentTableRow(
+            WsTable table,
+            Map<String, String> fks,
+            Set<String> columnsToShow,
+            WsConnection conn) {
+        final Set<String> lColumnsToShow =
+                ((null == columnsToShow) || (columnsToShow.isEmpty())) ?
+                        table.getColumnsByName().keySet()
+                        : columnsToShow;
+
+        Map<String, WsColumn> colsDict = table.getColumnsByFullName();
+        Map<WsColumn, String> keyCols = new HashMap<>();
+        fks.keySet().stream().forEach((k) -> {
+            keyCols.put(colsDict.get(k), fks.get(k));
+        });
+        PreparedStatement p = DbUtil.createSingleReadQuery(
+                table,
+                keyCols,
+                lColumnsToShow,
+                conn.getNativeConnection());
+
+        ResultSet rs = p.executeQuery();
+        Map<String, Object> row = new LinkedHashMap<>();
+        if (rs.next()) {
+            for (String name : lColumnsToShow) {
+                row.put(name, rs.getObject(name));
+            }
+        }
+        return row;
+    }*/
 
     @SneakyThrows
     private static Map<String, Object> readTableRow(
@@ -201,7 +263,7 @@ public class TableContentService {
         }
         return row;
     }
-
+/*
     @SneakyThrows
     private static Map<String, Object> readTableRow(
             WsTable table,
@@ -224,5 +286,5 @@ public class TableContentService {
             }
         }
         return row;
-    }
+    }*/
 }

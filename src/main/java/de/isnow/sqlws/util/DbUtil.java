@@ -38,6 +38,30 @@ public class DbUtil {
         return p;
     }
 
+    @SneakyThrows
+    public static PreparedStatement createChildTableReadQuery(
+            WsTable childTable,
+            Map<WsColumn, WsColumn> primarySecondaryKeyRelations,
+            Map<String, String> pkVals,
+            Collection<String> columnsToShow,
+            Connection conn) {
+        if (null == columnsToShow)
+            columnsToShow = childTable.getColumnsByName().keySet();
+        String tableHeadSelect= createTableHeadSelect(childTable, columnsToShow);
+        StringBuilder sb = new StringBuilder();
+        List<String> pkClauses = new ArrayList<>();
+        for (WsColumn col : primarySecondaryKeyRelations.keySet()) {
+            WsColumn fkCol = primarySecondaryKeyRelations.get(col);
+            if (null != fkCol) {
+                pkClauses.add(fkCol.getFullName()+" = "+ pkVals.get(col.getName()));
+            }
+        }
+        sb.append(" WHERE ");
+        sb.append(String.join(" AND ", pkClauses));
+        String q = tableHeadSelect+sb.toString();
+        PreparedStatement p = conn.prepareStatement(q);
+        return p;
+    }
 
     @SneakyThrows
     public static PreparedStatement createLimitedReadQuery(
