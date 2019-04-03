@@ -1,5 +1,8 @@
 package de.isnow.sqlws.model;
 
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -9,6 +12,7 @@ import javax.ws.rs.core.Link;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import de.isnow.sqlws.resources.ColumnModelService;
 import de.isnow.sqlws.resources.TableContentService;
+import de.isnow.sqlws.util.DbUtil;
 import lombok.Data;
 import lombok.ToString;
 import org.glassfish.jersey.linking.Binding;
@@ -229,6 +233,64 @@ public class WsTable extends WsObject{
 		if (pkCols.isEmpty())
 			return null;
 		return pkCols.get(0);
+	}
+
+
+	public WsColumn getColumnByName(String name) {
+		List<WsColumn> pkCols = columns
+				.stream()
+				.filter((c) -> c.getName().equals(name))
+				.collect(Collectors.toList());
+		if (pkCols.isEmpty())
+			return null;
+		return pkCols.get(0);
+	}
+
+	public Set<WsColumn> getColumnsToShow(Collection<String> columnsToShow) {
+		Set<String> lColumnsToShow =
+				((null == columnsToShow) || (columnsToShow.isEmpty())) ?
+						getColumnsByName().keySet()
+						: new LinkedHashSet<>(columnsToShow);
+		return lColumnsToShow.stream().map((name) ->
+				getColumnByName(name))
+				.collect(Collectors.toSet());
+	}
+
+
+	public void getMatchingFKs(WsTable childTable) {
+		List<Map<String, Object>> retVal = new ArrayList<>();
+		final Map<WsColumn, WsColumn> childPks = new HashMap<>();
+		Set<String> pkVals = this
+				.getPrimaryKeyColumns()
+				.stream()
+				.map((c) -> c.getName())
+				.collect(Collectors.toSet());
+		Set<WsTable.WsForeignKey> fkCols = childTable.getForeignKeys();
+		fkCols.forEach((c) -> {
+			if (c.getParentTableKey().equals(getFullName())) {
+				c.getPrimaryForeignKeyRelationships().forEach((f) -> {
+					WsColumn pfkCol = getColumnByFullName(f.get("pk"));
+					WsColumn ffkCol = childTable.getColumnByFullName(f.get("fk"));
+					childPks.put(pfkCol, ffkCol);
+					try {
+						PreparedStatement s = DbUtil.createChildTableReadQuery(
+								childTable, childPks, pkVals,
+								null, conn.getNativeConnection());
+						ResultSet rs = s.executeQuery();
+						while (rs.next()) {
+							Map<String, Object> row = new LinkedHashMap<>();
+							for (String name : lColumnsToShow) {
+								row.put(name, rs.getObject(name));
+							}
+							retVal.add(row);
+						}
+					} catch (SQLException ex) {
+						ex.printStackTrace();
+					}
+
+				});
+			}
+		});
 	}
 
 	public List<WsTable> getChildTables() {

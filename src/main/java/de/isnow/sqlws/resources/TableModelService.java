@@ -20,7 +20,7 @@ public class TableModelService {
 			@PathParam("id") String tableId) {
 
 		WsTable wst = WsTable.get(tableId);
-		VmTable vmt = VmTable.fromWsTable(wst, 1,true);
+		VmTable vmt = VmTable.fromWsTable(wst, null, 1,true);
 
 		Map<String, Object> response = RestUtils.createJsonWrapper(vmt);
 		response.put("id", tableId);

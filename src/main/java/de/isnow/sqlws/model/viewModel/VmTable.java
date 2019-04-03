@@ -42,6 +42,7 @@ public class VmTable extends VmObject {
 
     public static VmTable fromWsTable(
             WsTable wst,
+            Collection<String> columnNamesToShow,
             int recurseChildTablesDeep,
             boolean copyForeignKeys) {
         if (null == wst)
@@ -51,22 +52,25 @@ public class VmTable extends VmObject {
         vmt.fullName = wst.getFullName();
         if (copyForeignKeys)
             vmt.setForeignKeys(wst);
+        Set<WsColumn> colsToShow = wst.getColumnsToShow(columnNamesToShow);
         Set<VmColumn> cols = new LinkedHashSet<>();
         int cnt = 0;
         if (null != wst.getColumns()) {
             for (WsColumn c : wst.getColumns()) {
-                VmColumn col = VmColumn.fromWsColumn(c);
-                if (!c.isForeignKey()) {
-                    col.setPosition(cnt++);
+                if (colsToShow.contains(c)) {
+                    VmColumn col = VmColumn.fromWsColumn(c);
+                    if (!c.isForeignKey()) {
+                        col.setPosition(cnt++);
+                    }
+                    cols.add(col);
                 }
-                cols.add(col);
             }
         };
         vmt.setColumns(cols);
         if (recurseChildTablesDeep > 0) {
             List<WsTable> children = wst.getChildTables();
             children.forEach((t) -> {
-                VmTable ct = fromWsTable(t, (recurseChildTablesDeep -1),copyForeignKeys);
+                VmTable ct = fromWsTable(t, null, (recurseChildTablesDeep -1),copyForeignKeys);
                 vmt.children.add(ct);
             });
         }
