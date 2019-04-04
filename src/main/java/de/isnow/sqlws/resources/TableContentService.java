@@ -3,18 +3,16 @@ package de.isnow.sqlws.resources;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import de.isnow.sqlws.model.*;
 import de.isnow.sqlws.model.viewModel.VmColumn;
+import de.isnow.sqlws.model.viewModel.VmForeignKey;
 import de.isnow.sqlws.model.viewModel.VmObject;
 import de.isnow.sqlws.model.viewModel.VmTable;
 import de.isnow.sqlws.util.DbUtil;
 import de.isnow.sqlws.util.RestUtils;
 import lombok.SneakyThrows;
-import org.glassfish.jersey.media.multipart.FormDataParam;
-import org.jboss.logging.Param;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.PathSegment;
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -123,8 +121,20 @@ public class TableContentService {
             List<WsTable> cts = table.getChildTables();
             cts.forEach((t) -> {
                 VmTable childTable = VmTable.fromWsTable(t, null, depth-1, true);
-                childTable.getFkList().forEach((fkl) -> {
-                    String pk =
+                List<VmForeignKey> fks = tableToReturn.getMatchingFKs(childTable);
+                fks.forEach((fk) -> {
+                    childTable.addForeignKey(fk);
+                    fk.getPrimaryForeignKeyRelationships().forEach((m) -> {
+                        String pk = (String) m.get("pk");
+                        Optional<VmColumn> first = tableToReturn.getColumns().stream().filter((c) -> {
+                            return c.getFullName().equals(pk);
+                        }).findFirst();
+                        first.ifPresent((c) -> {
+                            m.put("value", c.getValue());
+                        }
+
+                        );
+                    });
                 });
                 children.put(childTable.getFullName(), childTable);
             });
@@ -242,8 +252,8 @@ public class TableContentService {
         fkCols.forEach((c) -> {
             if (c.getParentTableKey().equals(parentTable.getFullName())) {
                 c.getPrimaryForeignKeyRelationships().forEach((f) -> {
-                    WsColumn pfkCol = parentTable.getColumnByFullName(f.get("pk"));
-                    WsColumn ffkCol = childTable.getColumnByFullName(f.get("fk"));
+                    WsColumn pfkCol = parentTable.getColumnByFullName(f.getPkColumnName());
+                    WsColumn ffkCol = childTable.getColumnByFullName(f.getFkColumnName());
                     childPks.put(pfkCol, ffkCol);
                     try {
                         PreparedStatement s = DbUtil.createChildTableReadQuery(

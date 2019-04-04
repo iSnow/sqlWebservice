@@ -77,6 +77,23 @@ public class VmTable extends VmObject {
         return vmt;
     }
 
+    public List<VmForeignKey> getMatchingFKs(VmTable childTable) {
+        List<VmForeignKey> retVal = new ArrayList<>();
+        List<VmForeignKey> fkCols = childTable.fkList;
+        fkCols.forEach((c) -> {
+            if (c.getParentTableKey().equals(getFullName())) {
+               retVal.add(c);
+            }
+        });
+        return retVal;
+    }
+
+    public void addForeignKey(VmForeignKey fk) {
+        if (null == fk)
+            return;
+        fkList.add(fk);
+    }
+
     public void setForeignKeys(Collection<WsTable.WsForeignKey> fks) {
         if (null == fks)
             return;

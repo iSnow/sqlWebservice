@@ -68,7 +68,7 @@ public class WsTable extends WsObject{
 
 	/*@Getter
 	@JsonIgnore
-	private Map<String, Relation> relations = new HashMap<>();
+	private Map<String, WsRelation> relations = new HashMap<>();
 */
 	@Getter
 	@JsonIgnore
@@ -257,40 +257,19 @@ public class WsTable extends WsObject{
 	}
 
 
-	public void getMatchingFKs(WsTable childTable) {
-		List<Map<String, Object>> retVal = new ArrayList<>();
+	public Map<WsColumn, WsColumn> getMatchingFKs(WsTable childTable) {
 		final Map<WsColumn, WsColumn> childPks = new HashMap<>();
-		Set<String> pkVals = this
-				.getPrimaryKeyColumns()
-				.stream()
-				.map((c) -> c.getName())
-				.collect(Collectors.toSet());
 		Set<WsTable.WsForeignKey> fkCols = childTable.getForeignKeys();
 		fkCols.forEach((c) -> {
 			if (c.getParentTableKey().equals(getFullName())) {
 				c.getPrimaryForeignKeyRelationships().forEach((f) -> {
-					WsColumn pfkCol = getColumnByFullName(f.get("pk"));
-					WsColumn ffkCol = childTable.getColumnByFullName(f.get("fk"));
+					WsColumn pfkCol = getColumnByFullName(f.getPkColumnName());
+					WsColumn ffkCol = childTable.getColumnByFullName(f.getFkColumnName());
 					childPks.put(pfkCol, ffkCol);
-					try {
-						PreparedStatement s = DbUtil.createChildTableReadQuery(
-								childTable, childPks, pkVals,
-								null, conn.getNativeConnection());
-						ResultSet rs = s.executeQuery();
-						while (rs.next()) {
-							Map<String, Object> row = new LinkedHashMap<>();
-							for (String name : lColumnsToShow) {
-								row.put(name, rs.getObject(name));
-							}
-							retVal.add(row);
-						}
-					} catch (SQLException ex) {
-						ex.printStackTrace();
-					}
-
 				});
 			}
 		});
+		return childPks;
 	}
 
 	public List<WsTable> getChildTables() {
@@ -314,8 +293,8 @@ public class WsTable extends WsObject{
 			}).collect(Collectors.toList());
 			if (matchingFks.size() > 0) {
 				matchingFks.get(0).primaryForeignKeyRelationships.forEach((k) -> {
-					WsColumn col = (WsColumn)columnReg.get(k.get("fk"));
-					col.setReferences(k.get("pk"));
+					WsColumn col = (WsColumn)columnReg.get(k.getFkColumnName());
+					col.setReferences(k.getPkColumnName());
 				});
 			}
 		});
@@ -340,7 +319,7 @@ public class WsTable extends WsObject{
 		Set<WsForeignKey> fkSet = fks.stream()
 			.map((fk) -> {
 				WsForeignKey k = new WsForeignKey();
-				List<Map<String, String>> keyRelationsships = new ArrayList<>();
+				List<WsRelation> keyRelationsships = new ArrayList<>();
 				List<ForeignKeyColumnReference> refs = fk.getColumnReferences();
 				refs.forEach((r) -> {
 					String fkc = r.getForeignKeyColumn().getFullName();
@@ -354,9 +333,9 @@ public class WsTable extends WsObject{
 					WsColumn fKCol =  colsRegistry.get(fkc);
 					pKCols.forEach((c)-> c.addReferencedBy(fKCol));
 					//System.out.println(pKCols);
-					Map<String, String> kv = new LinkedHashMap<>();
-					kv.put("pk", pkc);
-					kv.put("fk", fkc);
+					WsRelation kv = new WsRelation();
+					kv.setPkColumnName(pkc);
+					kv.setFkColumnName(fkc);
 					keyRelationsships.add(kv);
 				});
 				k.setPrimaryForeignKeyRelationships(keyRelationsships);
@@ -413,6 +392,6 @@ public class WsTable extends WsObject{
 
 		String parentTableKey;
 
-		List<Map<String, String>> primaryForeignKeyRelationships;
+		List<WsRelation> primaryForeignKeyRelationships;
 	}
 }
