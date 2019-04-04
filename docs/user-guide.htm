@@ -26,17 +26,17 @@
        <li>Start the servlet engine and point your browser at <a href="http://localhost:8080/sqlrest">http://localhost:8080/sqlrest</a>, if your Servlet engine is running at port 8080.</li>
     </ul>
 
-    <h2>Using a different database</h2>
+    <h2>Using a different wsCatalog</h2>
 
     <p>The JDBC connection is configured in the sqlrestconf.xml. You can find sqlrestconf.xml inside the WEB-INF directory. Look at:</p>
 
     <code>sqlrest-XXX\webapps\sqlrest\WEB-INF\sqlrestconf.xml</code>
 
-    <p>To configure the driver, enter the right values for your database. The snippet shows a configuration for a hypersonic database in server mode.</p>
+    <p>To configure the driver, enter the right values for your wsCatalog. The snippet shows a configuration for a hypersonic wsCatalog in server mode.</p>
 
     <pre>
 &lt;jdbc-driver-class>org.hsqldb.jdbcDriver&lt;/jdbc-driver-class>
-&lt;database-url>jdbc:hsqldb:hsql://localhost&lt;/database-url>
+&lt;wsCatalog-url>jdbc:hsqldb:hsql://localhost&lt;/wsCatalog-url>
 &lt;user>sa&lt;/user>
 &lt;password>&lt;/password>
     </pre>
@@ -87,7 +87,7 @@ the Design of Network-based Software Architectures</a><br/>
     </p>
 
     <p>
-    <a href="http://127.0.0.1:8080/public/xml/rest-webservices.htm">REST Web Services - Eine Einführung</a><br/>
+    <a href="http://127.0.0.1:8080/public/xml/rest-webservices.htm">REST Web Services - Eine Einfï¿½hrung</a><br/>
     German introduction in REpresentational State Transfer
     </p>
 

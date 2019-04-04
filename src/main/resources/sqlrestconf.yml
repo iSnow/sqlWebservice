@@ -4,9 +4,9 @@
 connectionConfig:
   database: postgres-test
   jdbc-driver-class: org.postgresql.Driver
-  database-url: jdbc:postgresql://localhost:5445/crypto?currentschema=coins
+  database-url: jdbc:postgresql://192.168.1.24:5432/crypto
   user: postgres
-  password: postgres
+  password: 1Qay2Wsx?
 
 internalStoreConfig:
   database: sqlRestConfigStore
@@ -17,7 +17,7 @@ internalStoreConfig:
 
 application:
   verbose: true
-  routeConfig: /home/janderj1/workspace/sqlWebservice/src/main/resources/router-config.yml
+  routeConfig: /home/snow/Projects/cryptocoins/router-config.yml
 
 files:
-  tableConfig: /home/janderj1/workspace/sqlWebservice/src/main/resources/table-config/
+  tableConfig: /home/snow/Projects/cryptocoins/table-config/

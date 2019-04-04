@@ -4,11 +4,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.isnow.sqlws.model.WsColumn;
 import de.isnow.sqlws.model.WsTable;
-import lombok.Data;
 import lombok.Getter;
-import schemacrawler.schema.Column;
-import schemacrawler.schema.ForeignKey;
-import schemacrawler.schema.ForeignKeyColumnReference;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -23,9 +19,10 @@ public class VmTable extends VmObject {
     @JsonProperty("columns")
     Set<VmColumn> columns = new LinkedHashSet<>();
 
-    @JsonProperty("primaryForeignKeyRelations")
-    List<VmForeignKey> fkList = new ArrayList<>();
+    @JsonProperty("relations")
+    Set<VmForeignKey> relations = new HashSet<>();
 
+    @JsonProperty("children")
     Set<VmTable> children = new LinkedHashSet<>();
 
     public void setColumns(Collection<VmColumn> cols) {
@@ -77,9 +74,9 @@ public class VmTable extends VmObject {
         return vmt;
     }
 
-    public List<VmForeignKey> getMatchingFKs(VmTable childTable) {
-        List<VmForeignKey> retVal = new ArrayList<>();
-        List<VmForeignKey> fkCols = childTable.fkList;
+    public Set<VmForeignKey> getMatchingFKs(VmTable childTable) {
+        Set<VmForeignKey> retVal = new HashSet<>();
+        Set<VmForeignKey> fkCols = childTable.relations;
         fkCols.forEach((c) -> {
             if (c.getParentTableKey().equals(getFullName())) {
                retVal.add(c);
@@ -91,13 +88,13 @@ public class VmTable extends VmObject {
     public void addForeignKey(VmForeignKey fk) {
         if (null == fk)
             return;
-        fkList.add(fk);
+        relations.add(fk);
     }
 
     public void setForeignKeys(Collection<WsTable.WsForeignKey> fks) {
         if (null == fks)
             return;
-        fks.forEach((fk) -> fkList.add(VmForeignKey.fromWsForeignKey(fk)));
+        fks.forEach((fk) -> relations.add(VmForeignKey.fromWsForeignKey(fk)));
     }
 
     public void setForeignKeys(WsTable table) {
@@ -107,6 +104,10 @@ public class VmTable extends VmObject {
                 setForeignKeys(wsfks);
             }
         }
+    }
+
+    public void setForeignKeys(Set<VmForeignKey> keys) {
+        this.relations = keys;
     }
 
 }

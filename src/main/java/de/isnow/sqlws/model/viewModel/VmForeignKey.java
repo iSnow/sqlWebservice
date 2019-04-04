@@ -10,7 +10,7 @@ import lombok.EqualsAndHashCode;
 import java.util.*;
 
 @Data
-@EqualsAndHashCode(of={"childTableKey", "primaryForeignKeyRelationships"})
+@EqualsAndHashCode(of={"childTableKey", "childTableKey"})
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public class VmForeignKey {
 
@@ -18,7 +18,7 @@ public class VmForeignKey {
 
     String parentTableKey;
 
-    List<Map<String, Object>> primaryForeignKeyRelationships;
+    List<Map<String, Object>> primaryForeignKeyRelationships = new ArrayList<>();
 
     public static VmForeignKey fromWsForeignKey(WsTable.WsForeignKey fk) {
         VmForeignKey that = new VmForeignKey();
@@ -33,6 +33,7 @@ public class VmForeignKey {
             Map<String, Object> m = new HashMap<>();
             m.put("fk", rel.getFkColumnName());
             m.put("pk", rel.getPkColumnName());
+            primaryForeignKeyRelationships.add(m);
         });
     }
 /*

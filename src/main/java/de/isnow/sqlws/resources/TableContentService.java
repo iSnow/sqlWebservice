@@ -116,12 +116,13 @@ public class TableContentService {
         VmTable tableToReturn = VmTable.fromWsTable(table, columnsToShow, depth, true);
         transformTable(table,tableToReturn,pks,conn);
         //Map<String, List<Map<String, Object>>> children = new TreeMap<>();
-        Map<String, VmTable> children = new TreeMap<>();
+        //Map<String, VmTable> children = new TreeMap<>();
         if (depth > 0) {
             List<WsTable> cts = table.getChildTables();
+            Set<VmForeignKey> newFks = new HashSet<>();
             cts.forEach((t) -> {
                 VmTable childTable = VmTable.fromWsTable(t, null, depth-1, true);
-                List<VmForeignKey> fks = tableToReturn.getMatchingFKs(childTable);
+                Set<VmForeignKey> fks = tableToReturn.getMatchingFKs(childTable);
                 fks.forEach((fk) -> {
                     childTable.addForeignKey(fk);
                     fk.getPrimaryForeignKeyRelationships().forEach((m) -> {
@@ -136,8 +137,10 @@ public class TableContentService {
                         );
                     });
                 });
-                children.put(childTable.getFullName(), childTable);
+                newFks.addAll(fks);
+                //children.put(childTable.getFullName(), childTable);
             });
+            tableToReturn.setForeignKeys(newFks);
         }
         Map<String, Object> response = RestUtils.createJsonWrapper(new Object[]{tableToReturn});
         response.put("id", tableId);
