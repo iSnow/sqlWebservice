@@ -115,30 +115,21 @@ public class TableContentService {
 
         VmTable tableToReturn = VmTable.fromWsTable(table, columnsToShow, depth, true);
         transformTable(table,tableToReturn,pks,conn);
-        //Map<String, List<Map<String, Object>>> children = new TreeMap<>();
-        //Map<String, VmTable> children = new TreeMap<>();
         if (depth > 0) {
             List<WsTable> cts = table.getChildTables();
             Set<VmForeignKey> newFks = new HashSet<>();
             cts.forEach((t) -> {
-                VmTable childTable = VmTable.fromWsTable(t, null, depth-1, true);
-                Set<VmForeignKey> fks = tableToReturn.getMatchingFKs(childTable);
-                fks.forEach((fk) -> {
-                    childTable.addForeignKey(fk);
-                    fk.getPrimaryForeignKeyRelationships().forEach((m) -> {
-                        String pk = (String) m.get("pk");
-                        Optional<VmColumn> first = tableToReturn.getColumns().stream().filter((c) -> {
-                            return c.getFullName().equals(pk);
-                        }).findFirst();
-                        first.ifPresent((c) -> {
-                            m.put("value", c.getValue());
-                        }
+                //VmTable childTable = VmTable.fromWsTable(t, null, depth-1, true);
 
-                        );
-                    });
+                VmTable childTable = tableToReturn.getChildTableByFullName(t.getFullName());
+                VmForeignKey fk = tableToReturn.getMatchingFKs(childTable);
+                fk.getPrimaryForeignKeyRelationships().forEach((m) -> {
+                    VmColumn c = tableToReturn.getColumnByFullName((String)m.get("pk"));
+                    if (null != c)
+                        m.put("value", c.getValue());
                 });
-                newFks.addAll(fks);
-                //children.put(childTable.getFullName(), childTable);
+                childTable.addForeignKey(fk);
+                newFks.add(fk);
             });
             tableToReturn.setForeignKeys(newFks);
         }

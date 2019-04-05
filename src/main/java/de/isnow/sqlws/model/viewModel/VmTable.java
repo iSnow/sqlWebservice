@@ -20,7 +20,7 @@ public class VmTable extends VmObject {
     Set<VmColumn> columns = new LinkedHashSet<>();
 
     @JsonProperty("relations")
-    Set<VmForeignKey> relations = new HashSet<>();
+    Map<String, VmForeignKey> relations = new HashMap<>();
 
     @JsonProperty("children")
     Set<VmTable> children = new LinkedHashSet<>();
@@ -35,6 +35,22 @@ public class VmTable extends VmObject {
     public void addColumn(VmColumn col) {
         columns.add(col);
         setColumns(columns);
+    }
+
+    public VmColumn getColumnByFullName(String fullName) {
+        for (VmColumn c : columns) {
+            if (c.fullName.equals(fullName))
+                return c;
+        }
+        return null;
+    }
+
+    public VmTable getChildTableByFullName(String fullName) {
+        for (VmTable c : children) {
+            if (c.fullName.equals(fullName))
+                return c;
+        }
+        return null;
     }
 
     public static VmTable fromWsTable(
@@ -74,40 +90,45 @@ public class VmTable extends VmObject {
         return vmt;
     }
 
-    public Set<VmForeignKey> getMatchingFKs(VmTable childTable) {
-        Set<VmForeignKey> retVal = new HashSet<>();
-        Set<VmForeignKey> fkCols = childTable.relations;
-        fkCols.forEach((c) -> {
-            if (c.getParentTableKey().equals(getFullName())) {
-               retVal.add(c);
-            }
-        });
-        return retVal;
+    public VmForeignKey getMatchingFKs(VmTable childTable) {
+        return relations.get(childTable.fullName);
     }
 
     public void addForeignKey(VmForeignKey fk) {
         if (null == fk)
             return;
-        relations.add(fk);
+        String name = fk.getChildTableKey();
+        if (name.equals(this.fullName)) {
+            name = fk.getParentTableKey();
+        }
+        relations.put(name, fk);
+    }
+
+    public void addForeignKey(WsTable.WsForeignKey fk) {
+        if (null == fk)
+            return;
+        addForeignKey(VmForeignKey.fromWsForeignKey(fk));
+    }
+
+    public void setForeignKeys(Set<VmForeignKey> keys) {
+        if (null == keys)
+            return;
+        relations = new HashMap<>();
+        keys.forEach(this::addForeignKey);
     }
 
     public void setForeignKeys(Collection<WsTable.WsForeignKey> fks) {
         if (null == fks)
             return;
-        fks.forEach((fk) -> relations.add(VmForeignKey.fromWsForeignKey(fk)));
+        relations = new HashMap<>();
+        fks.forEach(this::addForeignKey);
     }
 
     public void setForeignKeys(WsTable table) {
         if (null != table) {
             Set<WsTable.WsForeignKey> wsfks = table.parseForeignKeys();
-            if (null != wsfks) {
-                setForeignKeys(wsfks);
-            }
+            setForeignKeys(wsfks);
         }
-    }
-
-    public void setForeignKeys(Set<VmForeignKey> keys) {
-        this.relations = keys;
     }
 
 }
