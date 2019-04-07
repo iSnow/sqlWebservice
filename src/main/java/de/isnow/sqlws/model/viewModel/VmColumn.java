@@ -24,6 +24,12 @@ public class VmColumn extends VmObject {
     @JsonProperty("references")
     private String references;
 
+    @JsonProperty("dataType")
+    private String dataType;
+
+    @JsonProperty("containerId")
+    private String containerId;
+
     @Setter
     private Object value;
 
@@ -31,6 +37,8 @@ public class VmColumn extends VmObject {
         VmColumn col = new VmColumn();
         col.name = wsc.getName();
         col.fullName = wsc.getFullName();
+        col.dataType = wsc.getDataType();
+        col.containerId = wsc.getId();
         col.references = wsc.getReferences();
         col.visible = !(wsc.isForeignKey());
         col.referencedBy = new ArrayList<>();
