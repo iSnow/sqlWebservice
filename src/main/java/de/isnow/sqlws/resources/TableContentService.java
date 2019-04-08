@@ -114,29 +114,35 @@ public class TableContentService {
         //testPksMatch(table, pks);
 
         VmTable tableToReturn = VmTable.fromWsTable(table, columnsToShow, depth, true);
-        transformTable(table,tableToReturn,pks,conn);
-        if (depth > 0) {
-            List<WsTable> cts = table.getChildTables();
-            Set<VmForeignKey> newFks = new HashSet<>();
-            cts.forEach((t) -> {
-                //VmTable childTable = VmTable.fromWsTable(t, null, depth-1, true);
+        transformTable(table, tableToReturn, pks, conn);
 
-                VmTable childTable = tableToReturn.getChildTableByFullName(t.getFullName());
-                VmForeignKey fk = tableToReturn.getMatchingFKs(childTable);
-                fk.getPrimaryForeignKeyRelationships().forEach((m) -> {
-                    VmColumn c = tableToReturn.getColumnByFullName((String)m.get("pk"));
-                    if (null != c)
-                        m.put("value", c.getValue());
-                });
-                childTable.addForeignKey(fk);
-                newFks.add(fk);
-            });
-            tableToReturn.setForeignKeys(newFks);
+        if (tableToReturn.getChildren().size() > 0) {
+            for (VmTable child : tableToReturn.getChildren()) {
+                WsTable wstChild = null;
+                Map<String, String> childPks = new HashMap<>();
+                for (VmForeignKey rel : child.getRelations().values()) {
+                    if (null == wstChild)
+                        wstChild = WsTable.get(rel.getChildTableKey());
+                        wstChild = WsTable.get(rel.getChildTableKey());
+                    if (rel.getParentTableKey().equals(table.getId())) {
+                        for (Map<String, Object> r : rel.getPrimaryForeignKeyRelationships()) {
+                            String fk = (String) r.get("fk");
+                            String pk = (String) r.get("pk");
+                            String fkColName = child.getColumnByFullName(fk).getName();
+                            Object val = tableToReturn.getColumnByFullName(pk).getValue();
+                            childPks.put(fkColName, val.toString());
+                        }
+                    }
+                }
+                transformTable(wstChild, child, childPks, conn);
+            }
         }
+
         Map<String, Object> response = RestUtils.createJsonWrapper(new Object[]{tableToReturn});
         response.put("id", tableId);
         return response;
     }
+
 
     private static void transformTable(
             WsTable table,

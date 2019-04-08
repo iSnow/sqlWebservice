@@ -86,8 +86,27 @@ public class VmTable extends VmObject {
                 VmTable ct = fromWsTable(t, null, (recurseChildTablesDeep -1),copyForeignKeys);
                 vmt.children.add(ct);
             });
+            vmt.setForeignKeys(getForeignKeys(wst, vmt));
         }
         return vmt;
+    }
+
+
+    private static Set<VmForeignKey> getForeignKeys(WsTable table, VmTable tableToReturn) {
+        List<WsTable> cts = table.getChildTables();
+        Set<VmForeignKey> newFks = new HashSet<>();
+        cts.forEach((t) -> {
+            VmTable childTable = tableToReturn.getChildTableByFullName(t.getFullName());
+            VmForeignKey fk = tableToReturn.getMatchingFKs(childTable);
+            fk.getPrimaryForeignKeyRelationships().forEach((m) -> {
+                VmColumn c = tableToReturn.getColumnByFullName((String)m.get("pk"));
+                if (null != c)
+                    m.put("value", c.getValue());
+            });
+            childTable.addForeignKey(fk);
+            newFks.add(fk);
+        });
+        return newFks;
     }
 
     public VmForeignKey getMatchingFKs(VmTable childTable) {

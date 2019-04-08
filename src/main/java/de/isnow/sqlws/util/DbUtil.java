@@ -23,9 +23,9 @@ public class DbUtil {
             columnsToShow = table.getColumnsByName().keySet();
         String tableHeadSelect= createTableHeadSelect(table, columnsToShow);
         StringBuilder sb = new StringBuilder();
-        List<WsColumn> pkCols = table.getPrimaryKeyColumns();
+        //List<WsColumn> pkCols = table.getPrimaryKeyColumns();
         List<String> pkClauses = new ArrayList<>();
-        for (WsColumn col : pkCols) {
+        for (WsColumn col : primaryKeys.keySet()) {
             String val = primaryKeys.get(col);
             if (null != val) {
                 pkClauses.add(col.getName()+" = "+ val);
