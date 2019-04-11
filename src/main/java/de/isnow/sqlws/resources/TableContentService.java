@@ -87,7 +87,6 @@ public class TableContentService {
 
     @GET
     @Path("schema/{schemaid}/table/{tableid}/pk/{pks: .*}")
-    //@Consumes({MediaType.MULTIPART_FORM_DATA})
     @Produces(MediaType.APPLICATION_JSON)
     @SneakyThrows
     public Map getContentsOfRow(
@@ -123,7 +122,6 @@ public class TableContentService {
                 for (VmForeignKey rel : child.getRelations().values()) {
                     if (null == wstChild)
                         wstChild = WsTable.get(rel.getChildTableKey());
-                        wstChild = WsTable.get(rel.getChildTableKey());
                     if (rel.getParentTableKey().equals(table.getId())) {
                         for (Map<String, Object> r : rel.getPrimaryForeignKeyRelationships()) {
                             String fk = (String) r.get("fk");
@@ -144,6 +142,28 @@ public class TableContentService {
     }
 
 
+    @POST
+    @Path("schema/{schemaid}/table/{tableid}/pk/{pks: .*}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @SneakyThrows
+    public Map updatefRow(
+            @PathParam("schemaid") String schemaId,
+            @PathParam("tableid") String tableId,
+            @PathParam("pks") List<PathSegment> primaryKeys,
+            @FormParam("data") String payload) {
+        WsSchema schema = WsSchema.get(schemaId);
+        if (null == schema)
+            return null;
+        WsTable table = WsTable.get(tableId);
+        if (null == table) {
+            return null;
+        }
+        WsSchema schema2 = table.getOwningSchema();
+        if (!schema2.equals(schema))
+            return null;
+        return null;
+    }
+
     private static void transformTable(
             WsTable table,
             VmTable tableToReturn,
@@ -162,51 +182,6 @@ public class TableContentService {
         tableToReturn.getColumns().forEach((c) -> c.setValue(row.get(c.getName())));
     }
 
-    private static void transformSubTable(
-            WsTable table,
-            VmTable tableToReturn,
-            Map<String, String> pks,
-            WsConnection conn) {
-        Set<String> colNames = tableToReturn
-                .getColumns()
-                .stream()
-                .map(VmObject::getName).collect(Collectors.toSet());
-        final Set<WsColumn> lColumnsToShow = table.getColumnsToShow(colNames);
-
-
-        final Map<String, Object> row = readTableRow(
-                table, pks, lColumnsToShow, conn);
-
-        tableToReturn.getColumns().forEach((c) -> c.setValue(row.get(c.getName())));
-    }
-
-    /*private static Set<VmColumn> transformTable(
-            WsTable table,
-            Set<String> columnsToShow,
-            Map<String, String> pks,
-            WsConnection conn) {
-        final Set<WsColumn> lColumnsToShow = getColumnsToShow(table, columnsToShow);
-        final Set<VmColumn> lColumnsToReturn = lColumnsToShow
-                .stream()
-                .map(VmColumn::fromWsColumn)
-                .collect(Collectors.toSet());
-
-        final Map<String, Object> row = readTableRow(
-                table, pks, lColumnsToShow, conn);
-
-        lColumnsToReturn.forEach((c) -> c.setValue(row.get(c.getName())));
-        return lColumnsToReturn;
-    }
-
-    private static Set<WsColumn> getColumnsToShow(WsTable table, Set<String> columnsToShow) {
-        Set<String> lColumnsToShow =
-                ((null == columnsToShow) || (columnsToShow.isEmpty())) ?
-                        table.getColumnsByName().keySet()
-                        : columnsToShow;
-        return lColumnsToShow.stream().map((name) ->
-            table.getColumnByName(name))
-                .collect(Collectors.toSet());
-    }*/
 
     private void testPksMatch(WsTable table, Map<String, String> pks) {
         List<String> pkColNames = table
@@ -278,69 +253,6 @@ public class TableContentService {
         return retVal;
     }
 
-    /*@SneakyThrows
-    private static Map<String, Object> readDependentTableRow(
-            WsTable table,
-            Map<String, String> fks,
-            Set<String> columnsToShow,
-            WsConnection conn) {
-        final Set<String> lColumnsToShow =
-                ((null == columnsToShow) || (columnsToShow.isEmpty())) ?
-                        table.getColumnsByName().keySet()
-                        : columnsToShow;
-
-        Map<String, WsColumn> colsDict = table.getColumnsByFullName();
-        Map<WsColumn, String> keyCols = new HashMap<>();
-        fks.keySet().stream().forEach((k) -> {
-            keyCols.put(colsDict.get(k), fks.get(k));
-        });
-        PreparedStatement p = DbUtil.createSingleReadQuery(
-                table,
-                keyCols,
-                lColumnsToShow,
-                conn.getNativeConnection());
-
-        ResultSet rs = p.executeQuery();
-        Map<String, Object> row = new LinkedHashMap<>();
-        if (rs.next()) {
-            for (String name : lColumnsToShow) {
-                row.put(name, rs.getObject(name));
-            }
-        }
-        return row;
-    }*/
-
-    /*@SneakyThrows
-    private static Map<String, Object> readTableRow(
-            WsTable table,
-            Map<String, String> pks,
-            Set<String> columnsToShow,
-            WsConnection conn) {
-        final Set<String> lColumnsToShow =
-                ((null == columnsToShow) || (columnsToShow.isEmpty())) ?
-                        table.getColumnsByName().keySet()
-                        : columnsToShow;
-
-        Map<String, WsColumn> colsDict = table.getColumnsByName();
-        Map<WsColumn, String> pkCols = new HashMap<>();
-        pks.keySet().stream().forEach((k) -> {
-            pkCols.put(colsDict.get(k), pks.get(k));
-        });
-        PreparedStatement p = DbUtil.createSingleReadQuery(
-                table,
-                pkCols,
-                lColumnsToShow,
-                conn.getNativeConnection());
-
-        ResultSet rs = p.executeQuery();
-        Map<String, Object> row = new LinkedHashMap<>();
-        if (rs.next()) {
-            for (String name : lColumnsToShow) {
-                row.put(name, rs.getObject(name));
-            }
-        }
-        return row;
-    }*/
 
     @SneakyThrows
     private static Map<String, Object> readTableRow (
@@ -376,28 +288,5 @@ public class TableContentService {
         }
         return row;
     }
-/*
-    @SneakyThrows
-    private static Map<String, Object> readTableRow(
-            WsTable table,
-            Map<WsColumn, String> pks,
-            Set<String> columnsToShow,
-            WsConnection conn,
-            int depth) {
 
-        PreparedStatement p = DbUtil.createSingleReadQuery(
-                table,
-                pks,
-                columnsToShow,
-                conn.getNativeConnection());
-
-        ResultSet rs = p.executeQuery();
-        Map<String, Object> row = new LinkedHashMap<>();
-        if (rs.next()) {
-            for (String name : columnsToShow) {
-                row.put(name, rs.getObject(name));
-            }
-        }
-        return row;
-    }*/
 }
