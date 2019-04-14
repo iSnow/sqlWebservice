@@ -91,17 +91,35 @@ public class VmTable extends VmObject {
         return vmt;
     }
 
+    public void setRowValues(Map<String, Object> row) {
+        if (row.size() == 0)
+            return;
+        getColumns().forEach((c) -> c.setValue(row.get(c.getName())));
+        this.relations.values().forEach((c) -> {
+            if (c.getParentTableKey().equals(this.fullName)) {
+                c.getPrimaryForeignKeyRelationships().forEach((rel) -> {
+                    VmColumn col = getColumnByFullName(rel.pk);
+                    rel.value = col.getValue().toString();
+                });
+            } else if (c.getChildTableKey().equals(this.fullName)) {
+                c.getPrimaryForeignKeyRelationships().forEach((rel) -> {
+                    VmColumn col = getColumnByFullName(rel.fk);
+                    rel.value = col.getValue().toString();
+                });
+            }
+        });
+    }
 
-    private static Set<VmForeignKey> getForeignKeys(WsTable table, VmTable tableToReturn) {
+    public static Set<VmForeignKey> getForeignKeys(WsTable table, VmTable tableToReturn) {
         List<WsTable> cts = table.getChildTables();
         Set<VmForeignKey> newFks = new HashSet<>();
         cts.forEach((t) -> {
             VmTable childTable = tableToReturn.getChildTableByFullName(t.getFullName());
             VmForeignKey fk = tableToReturn.getMatchingFKs(childTable);
             fk.getPrimaryForeignKeyRelationships().forEach((m) -> {
-                VmColumn c = tableToReturn.getColumnByFullName((String)m.get("pk"));
+                VmColumn c = tableToReturn.getColumnByFullName((String)m.pk);
                 if (null != c)
-                    m.put("value", c.getValue());
+                    m.value = c.getValue();
             });
             childTable.addForeignKey(fk);
             newFks.add(fk);
@@ -134,6 +152,14 @@ public class VmTable extends VmObject {
             return;
         relations = new HashMap<>();
         keys.forEach(this::addForeignKey);
+        this.getChildren().forEach((c) -> {
+            String fName = c.fullName;
+            Set<VmForeignKey> rels = keys
+                .stream()
+                .filter((k) -> k.getChildTableKey().equals(fName))
+                .collect(Collectors.toSet());
+            c.setForeignKeys(rels);
+        });
     }
 
     public void setForeignKeys(Collection<WsTable.WsForeignKey> fks) {
@@ -148,6 +174,36 @@ public class VmTable extends VmObject {
             Set<WsTable.WsForeignKey> wsfks = table.parseForeignKeys();
             setForeignKeys(wsfks);
         }
+    }
+
+    public void setForeignKeys(VmTable parentTable) {
+        if (null != parentTable) {
+            relations.values().forEach((rel) -> {
+                rel.setChildKeyValues(parentTable.getParentKeyValues());
+            });
+        }
+    }
+
+    public Map<String, String> getChildKeyValues() {
+        Map<String, String> retVal = new HashMap<>();
+        relations.values().forEach((rel) -> {
+            if (rel.getChildTableKey().equals(this.fullName)) {
+                Map<String, String> iVal = rel.getChildKeyValues();
+                retVal.putAll(iVal);
+            }
+        });
+        return retVal;
+    }
+
+    public Map<String, String> getParentKeyValues() {
+        Map<String, String> retVal = new HashMap<>();
+        relations.values().forEach((rel) -> {
+            if (rel.getParentTableKey().equals(this.fullName)) {
+                Map<String, String> iVal = rel.getChildKeyValues();
+                retVal.putAll(iVal);
+            }
+        });
+        return retVal;
     }
 
 }

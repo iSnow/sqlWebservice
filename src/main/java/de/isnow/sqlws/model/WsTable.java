@@ -386,7 +386,7 @@ public class WsTable extends WsObject{
     List<Link> links;
 
 	@Data
-	public class WsForeignKey {
+	public static class WsForeignKey {
 
 		String childTableKey;
 

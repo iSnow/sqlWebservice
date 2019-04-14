@@ -1,6 +1,7 @@
 package de.isnow.sqlws.resources;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.isnow.sqlws.model.*;
 import de.isnow.sqlws.model.viewModel.VmColumn;
 import de.isnow.sqlws.model.viewModel.VmForeignKey;
@@ -9,9 +10,11 @@ import de.isnow.sqlws.model.viewModel.VmTable;
 import de.isnow.sqlws.util.DbUtil;
 import de.isnow.sqlws.util.RestUtils;
 import lombok.SneakyThrows;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.PathSegment;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -109,32 +112,11 @@ public class TableContentService {
         WsCatalog catalog = schema.getOwningCatalog();
         WsConnection conn = catalog.getOwningConnection();
 
-        final Map<String, String> pks = getKeyValues(primaryKeys);
-        //testPksMatch(table, pks);
+        final Map<String, String> pks = getKeyValues(primaryKeys, table);
+        testPksMatch(table, pks);
 
         VmTable tableToReturn = VmTable.fromWsTable(table, columnsToShow, depth, true);
         transformTable(table, tableToReturn, pks, conn);
-
-        if (tableToReturn.getChildren().size() > 0) {
-            for (VmTable child : tableToReturn.getChildren()) {
-                WsTable wstChild = null;
-                Map<String, String> childPks = new HashMap<>();
-                for (VmForeignKey rel : child.getRelations().values()) {
-                    if (null == wstChild)
-                        wstChild = WsTable.get(rel.getChildTableKey());
-                    if (rel.getParentTableKey().equals(table.getId())) {
-                        for (Map<String, Object> r : rel.getPrimaryForeignKeyRelationships()) {
-                            String fk = (String) r.get("fk");
-                            String pk = (String) r.get("pk");
-                            String fkColName = child.getColumnByFullName(fk).getName();
-                            Object val = tableToReturn.getColumnByFullName(pk).getValue();
-                            childPks.put(fkColName, val.toString());
-                        }
-                    }
-                }
-                transformTable(wstChild, child, childPks, conn);
-            }
-        }
 
         Map<String, Object> response = RestUtils.createJsonWrapper(new Object[]{tableToReturn});
         response.put("id", tableId);
@@ -144,13 +126,14 @@ public class TableContentService {
 
     @POST
     @Path("schema/{schemaid}/table/{tableid}/pk/{pks: .*}")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     @SneakyThrows
-    public Map updatefRow(
+    public Map updateRow(
             @PathParam("schemaid") String schemaId,
             @PathParam("tableid") String tableId,
             @PathParam("pks") List<PathSegment> primaryKeys,
-            @FormParam("data") String payload) {
+            @FormDataParam("data") String formData) {
         WsSchema schema = WsSchema.get(schemaId);
         if (null == schema)
             return null;
@@ -161,7 +144,12 @@ public class TableContentService {
         WsSchema schema2 = table.getOwningSchema();
         if (!schema2.equals(schema))
             return null;
-        return null;
+        ObjectMapper mapper = new ObjectMapper();
+        VmTable vtable = mapper.readValue(formData, VmTable.class);
+
+        Map<String, Object> response = RestUtils.createJsonWrapper(new Object[]{vtable});
+        response.put("id", tableId);
+        return response;
     }
 
     private static void transformTable(
@@ -179,7 +167,20 @@ public class TableContentService {
         final Map<String, Object> row = readTableRow(
                 table, pks, lColumnsToShow, conn);
 
-        tableToReturn.getColumns().forEach((c) -> c.setValue(row.get(c.getName())));
+        tableToReturn.setRowValues(row);
+        tableToReturn.getChildren().forEach((c) -> {
+            String fName = c.getFullName();
+            List<WsTable> children = table.getChildTables()
+                .stream()
+                .filter((ct) -> {return ct.getFullName().equals(fName);})
+                .collect(Collectors.toList());
+            if (children.size() > 0) {
+                c.setForeignKeys(tableToReturn);
+                transformTable(children.get(0), c, c.getChildKeyValues(), conn);
+            }
+        });
+        //Set<VmForeignKey> keys = VmTable.getForeignKeys(table, tableToReturn);
+        //tableToReturn.setForeignKeys(keys);
     }
 
 
@@ -195,8 +196,9 @@ public class TableContentService {
         }
     }
 
-    private static Map<String, String> getKeyValues(List<PathSegment> pathSegments) {
+    private static Map<String, String> getKeyValues(List<PathSegment> pathSegments, WsTable table) {
         Map<String, String> kvs = new LinkedHashMap<>();
+        Map<String, String> retVal = new LinkedHashMap<>();
         String key = null;
         for (PathSegment seg : pathSegments) {
             if (null == key)
@@ -206,7 +208,13 @@ public class TableContentService {
                 key = null;
             }
         }
-        return kvs;
+        kvs.keySet().forEach((kv) -> {
+            WsColumn col = table.getColumnByName(kv);
+            if (null != col) {
+                retVal.put(col.getFullName(), kvs.get(kv));
+            }
+        });
+        return retVal;
     }
 
     @SneakyThrows
@@ -271,7 +279,7 @@ public class TableContentService {
         }
         Map<WsColumn, String> pkCols = new HashMap<>();
         pks.keySet().forEach((k) -> {
-            pkCols.put(table.getColumnByName(k), pks.get(k));
+            pkCols.put(table.getColumnByFullName(k), pks.get(k));
         });
         PreparedStatement p = DbUtil.createSingleReadQuery(
                 table,
