@@ -36,6 +36,7 @@ import schemacrawler.schema.*;
 @JsonIgnoreProperties({
 		"filters"
 })
+@Data
 @ToString(of={"table", "owningSchema"})
 public class WsTable extends WsObject{
 
@@ -43,10 +44,8 @@ public class WsTable extends WsObject{
 	Table table;
 
 	@JsonIgnore
-	@Getter
 	private WsSchema owningSchema;
 
-	@Getter
 	private String tableType;
 	/*
         @Getter
@@ -55,22 +54,18 @@ public class WsTable extends WsObject{
         private int pkColumnType;
 
         */
-	@Getter
 	private Set<WsColumn> columns;
 	
 	@JsonIgnore
-	@Getter
 	private Map<String, WsColumn> columnsByName = new LinkedHashMap<>();
 
 	@JsonIgnore
-	@Getter
 	private Map<String, WsColumn> columnsByFullName = new LinkedHashMap<>();
 
 	/*@Getter
 	@JsonIgnore
 	private Map<String, WsRelation> relations = new HashMap<>();
 */
-	@Getter
 	@JsonIgnore
 	private Collection<Index> indexes;
 /*
@@ -83,7 +78,6 @@ public class WsTable extends WsObject{
 	Set<WsForeignKey> foreignKeys;
 */
 
-	@Getter
 	@JsonIgnore
 	Collection<TableConstraint> tableConstraints;
 
@@ -92,7 +86,6 @@ public class WsTable extends WsObject{
 	 * Jersey
 	 */
 	@JsonIgnore
-	@Getter
 	Long maxrecords;
 
 	/**
@@ -100,7 +93,6 @@ public class WsTable extends WsObject{
 	 * Jersey
 	 */
 	@JsonIgnore
-	@Getter
 	Long startrecord;
 
 	/**
@@ -108,14 +100,12 @@ public class WsTable extends WsObject{
 	 * Jersey
 	 */
 	@JsonIgnore
-	@Getter
 	Collection<String> columnsToShow;
 	/**
 	 * Ignore this property, it exists only to satisfy
 	 * Jersey
 	 */
 	@JsonIgnore
-	@Getter
 	Collection<String> filters;
 
 	public WsTable() {
@@ -343,6 +333,14 @@ public class WsTable extends WsObject{
 			})
 			.collect(Collectors.toSet());
 		return fkSet;
+	}
+
+	public void setFullName(String fullName) {
+		this.fullName = fullName;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	@InjectLinks({

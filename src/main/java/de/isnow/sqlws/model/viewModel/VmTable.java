@@ -53,6 +53,19 @@ public class VmTable extends VmObject {
         return null;
     }
 
+    public static WsTable toWsTable(
+            VmTable vmt,
+            int recurseChildTablesDeep,
+            boolean copyForeignKeys) {
+        if (null == vmt)
+            return null;
+        WsTable wst = new WsTable();
+        wst.setFullName(vmt.fullName);
+        wst.setName(vmt.name);
+
+        return wst;
+    }
+
     public static VmTable fromWsTable(
             WsTable wst,
             Collection<String> columnNamesToShow,

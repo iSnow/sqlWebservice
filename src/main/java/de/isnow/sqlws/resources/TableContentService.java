@@ -179,8 +179,6 @@ public class TableContentService {
                 transformTable(children.get(0), c, c.getChildKeyValues(), conn);
             }
         });
-        //Set<VmForeignKey> keys = VmTable.getForeignKeys(table, tableToReturn);
-        //tableToReturn.setForeignKeys(keys);
     }
 
 
