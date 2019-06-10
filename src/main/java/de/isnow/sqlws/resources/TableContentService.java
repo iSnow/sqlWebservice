@@ -3,10 +3,8 @@ package de.isnow.sqlws.resources;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.isnow.sqlws.model.*;
-import de.isnow.sqlws.model.viewModel.VmColumn;
-import de.isnow.sqlws.model.viewModel.VmForeignKey;
 import de.isnow.sqlws.model.viewModel.VmObject;
-import de.isnow.sqlws.model.viewModel.VmTable;
+import de.isnow.sqlws.model.viewModel.VmRecord;
 import de.isnow.sqlws.util.DbUtil;
 import de.isnow.sqlws.util.RestUtils;
 import lombok.SneakyThrows;
@@ -14,8 +12,8 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.PathSegment;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -112,13 +110,15 @@ public class TableContentService {
         WsCatalog catalog = schema.getOwningCatalog();
         WsConnection conn = catalog.getOwningConnection();
 
-        final Map<String, String> pks = getKeyValues(primaryKeys, table);
+        Map<WsColumn, String> cPks = new HashMap<>();
+        final Map<WsColumn, String> pks = getKeyValues(primaryKeys, table);
         testPksMatch(table, pks);
 
-        VmTable tableToReturn = VmTable.fromWsTable(table, columnsToShow, depth, true);
-        transformTable(table, tableToReturn, pks, conn);
 
-        Map<String, Object> response = RestUtils.createJsonWrapper(new Object[]{tableToReturn});
+        VmRecord recordToReturn = VmRecord.fromWsTable(table, columnsToShow, depth, true);
+        transformTable(table, recordToReturn, pks, conn);
+
+        Map<String, Object> response = RestUtils.createJsonWrapper(new Object[]{recordToReturn});
         response.put("id", tableId);
         return response;
     }
@@ -144,8 +144,15 @@ public class TableContentService {
         WsSchema schema2 = table.getOwningSchema();
         if (!schema2.equals(schema))
             return null;
+
+        WsCatalog catalog = schema.getOwningCatalog();
+        WsConnection conn = catalog.getOwningConnection();
+
+        final Map<WsColumn, String> pks = getKeyValues(primaryKeys, table);
+
         ObjectMapper mapper = new ObjectMapper();
-        VmTable vtable = mapper.readValue(formData, VmTable.class);
+        VmRecord vtable = mapper.readValue(formData, VmRecord.class);
+        DbUtil.updateRecord(table, vtable, pks, conn.getNativeConnection());
 
         Map<String, Object> response = RestUtils.createJsonWrapper(new Object[]{vtable});
         response.put("id", tableId);
@@ -154,8 +161,8 @@ public class TableContentService {
 
     private static void transformTable(
             WsTable table,
-            VmTable tableToReturn,
-            Map<String, String> pks,
+            VmRecord tableToReturn,
+            Map<WsColumn, String> pks,
             WsConnection conn) {
         Set<String> colNames = tableToReturn
                 .getColumns()
@@ -175,28 +182,34 @@ public class TableContentService {
                 .filter((ct) -> {return ct.getFullName().equals(fName);})
                 .collect(Collectors.toList());
             if (children.size() > 0) {
+                WsTable cTab = children.get(0);
                 c.setForeignKeys(tableToReturn);
-                transformTable(children.get(0), c, c.getChildKeyValues(), conn);
+                Map<WsColumn, String> cPks = new HashMap<>();
+                            Map<String, String> cKeyValues = c.getChildKeyValues();
+                for (String key : cKeyValues.keySet()) {
+                    cPks.put(cTab.getColumnByFullName(key), cKeyValues.get(key));
+                }
+                transformTable(cTab, c, cPks, conn);
             }
         });
     }
 
 
-    private void testPksMatch(WsTable table, Map<String, String> pks) {
-        List<String> pkColNames = table
+    private void testPksMatch(WsTable table, Map<WsColumn, String> pks) {
+        /*List<String> pkColNames = table
                 .getPrimaryKeyColumns()
                 .stream()
                 .map(WsObject::getFullName)
-                .collect(Collectors.toList());
-        List<String> inPkNames = new ArrayList<>(pks.keySet());
-        if (!pkColNames.equals(inPkNames)) {
+                .collect(Collectors.toList());*/
+        List<WsColumn> inPkNames = new ArrayList<>(pks.keySet());
+        if (!table.getPrimaryKeyColumns().equals(inPkNames)) {
             throw new IllegalArgumentException("list of primary keys mismatches table primary keys");
         }
     }
 
-    private static Map<String, String> getKeyValues(List<PathSegment> pathSegments, WsTable table) {
+    private static Map<WsColumn, String> getKeyValues(List<PathSegment> pathSegments, WsTable table) {
         Map<String, String> kvs = new LinkedHashMap<>();
-        Map<String, String> retVal = new LinkedHashMap<>();
+        Map<WsColumn, String> retVal = new LinkedHashMap<>();
         String key = null;
         for (PathSegment seg : pathSegments) {
             if (null == key)
@@ -209,7 +222,7 @@ public class TableContentService {
         kvs.keySet().forEach((kv) -> {
             WsColumn col = table.getColumnByName(kv);
             if (null != col) {
-                retVal.put(col.getFullName(), kvs.get(kv));
+                retVal.put(col, kvs.get(kv));
             }
         });
         return retVal;
@@ -263,7 +276,7 @@ public class TableContentService {
     @SneakyThrows
     private static Map<String, Object> readTableRow (
             WsTable table,
-            Map<String, String> pks,
+            Map<WsColumn, String> pks,
             Set<WsColumn> columnsToShow,
             WsConnection conn) {
         Set<String> lColumnsToShow = null;
@@ -275,13 +288,13 @@ public class TableContentService {
                     .map(WsObject::getName)
                     .collect(Collectors.toSet());
         }
-        Map<WsColumn, String> pkCols = new HashMap<>();
+        /*Map<WsColumn, String> pkCols = new HashMap<>();
         pks.keySet().forEach((k) -> {
             pkCols.put(table.getColumnByFullName(k), pks.get(k));
-        });
+        });*/
         PreparedStatement p = DbUtil.createSingleReadQuery(
                 table,
-                pkCols,
+                pks,
                 lColumnsToShow,
                 conn.getNativeConnection());
 

@@ -15,6 +15,8 @@ import javax.validation.constraints.NotNull;
 @EqualsAndHashCode(of={"name", "fullName"})
 public class VmObject implements Comparable<VmObject>{
 
+    protected String id;
+
     protected String name;
 
     protected String fullName;

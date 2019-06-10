@@ -6,7 +6,6 @@ import de.isnow.sqlws.model.WsTable;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import java.security.KeyPair;
 import java.util.*;
 
 @Data
@@ -68,7 +67,7 @@ public class VmForeignKey {
         });
     }
 
-    public void setKeyValues(VmTable parentTable) {
+    public void setKeyValues(VmRecord parentTable) {
         Map<String, String> vals = parentTable.getParentKeyValues();
         primaryForeignKeyRelationships.forEach((rel) -> {
             if (vals.get(rel.getPk()) != null) {

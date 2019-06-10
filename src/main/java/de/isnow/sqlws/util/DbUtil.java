@@ -2,16 +2,75 @@ package de.isnow.sqlws.util;
 
 import de.isnow.sqlws.model.WsColumn;
 import de.isnow.sqlws.model.WsTable;
+import de.isnow.sqlws.model.viewModel.VmRecord;
 import lombok.SneakyThrows;
 
 import javax.persistence.Query;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class DbUtil {
 
+    @SneakyThrows
+    public static void updateRecord(
+            WsTable model,
+            VmRecord rec,
+            Map<WsColumn, String> primaryKeys,
+            Connection conn) {
+        for (VmRecord r : rec.getChildren()) {
+            WsTable m = WsTable.get(rec.getId());
+            Map<WsColumn, String> pkCols = new HashMap<>();
+            primaryKeys.keySet().forEach((k) -> {
+                pkCols.put(m.getColumnByFullName(k.getFullName()), primaryKeys.get(k));
+            });
+            updateRecord(m, r, pkCols, conn);
+        }
+        Collection<String> columnsToShow = model.getColumnsByName().keySet();
+        PreparedStatement p = DbUtil.createSingleReadQuery(
+                model,
+                primaryKeys,
+                columnsToShow,
+                conn);
+
+        ResultSet rs = p.executeQuery();
+        Map<String, String> row = new LinkedHashMap<>();
+        if (rs.next()) {
+            for (String name : columnsToShow) {
+                row.put(name, rs.getObject(name).toString());
+            }
+        }
+        Map<String, Object> inserts = new LinkedHashMap<>();
+        for (WsColumn col : model.getColumns()) {
+            Object val = rec.getColumnByFullName(col.getFullName()).getValue();
+            if (null == val) {
+                Object val2 = row.get(col.getName());
+                if ((val2 != null)){
+                    inserts.put(col.getName(), null);
+                }
+            } else {
+                Object val2 = row.get(col.getName());
+                if ((val2 == null) || (!(val2.toString().equals(val.toString())))){
+                    inserts.put(col.getName(), val);
+                }
+            }
+        }
+        StringBuilder sb = new StringBuilder("UPDATE "+model.getName() + " (");
+        sb.append(inserts.keySet().stream().collect(Collectors.joining(",")));
+        sb.append(") VALUES (");
+        inserts.keySet().forEach((c) -> {
+            sb.append("?");
+        });
+        sb.append(")");
+        PreparedStatement insert = conn.prepareStatement(sb.toString());
+        int cnt = 1;
+        for (Object obj : inserts.values()) {
+            insert.setObject(cnt++, obj);
+        }
+        insert.executeQuery();
+    }
 
     @SneakyThrows
     public static PreparedStatement createSingleReadQuery(

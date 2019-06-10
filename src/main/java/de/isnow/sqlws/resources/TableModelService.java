@@ -7,7 +7,7 @@ import javax.ws.rs.core.MediaType;
 
 import de.isnow.sqlws.model.WsTable;
 import de.isnow.sqlws.model.WsSchema;
-import de.isnow.sqlws.model.viewModel.VmTable;
+import de.isnow.sqlws.model.viewModel.VmRecord;
 import de.isnow.sqlws.util.RestUtils;
 
 @Produces(MediaType.APPLICATION_JSON)
@@ -20,7 +20,7 @@ public class TableModelService {
 			@PathParam("id") String tableId) {
 
 		WsTable wst = WsTable.get(tableId);
-		VmTable vmt = VmTable.fromWsTable(wst, null, 1,true);
+		VmRecord vmt = VmRecord.fromWsTable(wst, null, 1,true);
 
 		Map<String, Object> response = RestUtils.createJsonWrapper(vmt);
 		response.put("id", tableId);
