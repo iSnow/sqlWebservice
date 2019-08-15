@@ -34,12 +34,19 @@ public class WsObject implements Comparable<WsObject>{
 
     public void setId(NamedObject schemaCrawlerObj) {
         schemaCrawlerLookupKey = schemaCrawlerObj.toUniqueLookupKey();
-        this.id = schemaCrawlerLookupKey.stream().filter(Objects::nonNull).collect(Collectors.joining("."));
+        this.id = idString(schemaCrawlerObj);
     }
 
     public void setId(String id) {
         this.id = id;
         schemaCrawlerLookupKey = Arrays.asList(id);
+    }
+
+    public static String idString(NamedObject schemaCrawlerObj) {
+        List<String> schemaCrawlerKey = schemaCrawlerObj.toUniqueLookupKey();
+        if ((null == schemaCrawlerKey) || (schemaCrawlerKey.isEmpty()))
+            throw new IllegalArgumentException("SchemaCrawler object with empty key");
+        return schemaCrawlerKey.stream().filter(Objects::nonNull).collect(Collectors.joining("."));
     }
 
     void register (Object o) {
@@ -54,6 +61,10 @@ public class WsObject implements Comparable<WsObject>{
             registries.put(clazz, wsObjectRegistry);
         }
         return wsObjectRegistry;
+    }
+
+    public static Registry getRegistry (Class clazz) {
+       return registries.get(clazz);
     }
 
     @Override

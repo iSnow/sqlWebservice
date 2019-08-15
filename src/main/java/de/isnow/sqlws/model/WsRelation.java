@@ -33,23 +33,27 @@
 
 package de.isnow.sqlws.model;
 
+import lombok.Data;
 import lombok.Getter;
 
 /**
  * @author tbayer
  *
  */
-@Getter
-public class Relation {
+@Data
+public class WsRelation {
 
-	private String pkTableName, pkColumnName, fkTableName, fkColumnName, fkName;
+	public WsRelation(){};
 
-	public Relation( String aPkTableName, String aPkColumnName, String aFkTableName, String aFkColumnName, String aFkName) {
+	public WsRelation(String aPkTableName, String aPkColumnName, String aFkTableName, String aFkColumnName, String aFkName) {
 		pkTableName = aPkTableName;
 		pkColumnName = aPkColumnName;
 		fkTableName = aFkTableName;
 		fkColumnName = aFkColumnName;
 		fkName = aFkName;
 	}
+
+	private String pkTableName, pkColumnName, fkTableName, fkColumnName, fkName;
+
 	
 }

@@ -11,10 +11,11 @@ import javax.validation.constraints.NotNull;
         getterVisibility = JsonAutoDetect.Visibility.NONE,
         setterVisibility = JsonAutoDetect.Visibility.NONE)
 
-
 @Data
 @EqualsAndHashCode(of={"name", "fullName"})
 public class VmObject implements Comparable<VmObject>{
+
+    protected String id;
 
     protected String name;
 

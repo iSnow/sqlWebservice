@@ -17,7 +17,7 @@
   
     
 
-    <p>This guide shows, how a relational database can be enabled as REST style Web Service within minutes. You can read the guide and try the <a href="http://www.thomas-bayer.com/rest-demo.htm">rest examples online</a> or you can deploy sqlREST and do it on your computer.</p>
+    <p>This guide shows, how a relational wsCatalog can be enabled as REST style Web Service within minutes. You can read the guide and try the <a href="http://www.thomas-bayer.com/rest-demo.htm">rest examples online</a> or you can deploy sqlREST and do it on your computer.</p>
 
 	<h2>Requirements</h2>
 
@@ -48,7 +48,7 @@
 
     <p>You should get a result like the one in picture 1.</p>
 
-    <img src="images/get-tables.gif" alt="Toplevel list of resources"/><br/>
+    <img src="images/get-wsTables.gif" alt="Toplevel list of resources"/><br/>
     <b>Picture 1.) </b>Toplevel list of resources<br/>
 
     <p>From here you can dive deeper into the service. This Web Service offers four kinds of resources. There are customers, products, invoices and items. Every kind of resource have a XLink attribute href with an URL. A list of resources is a resource too.</p>
@@ -62,7 +62,7 @@
       </tr>
     </table>
 
-    <p>As you might have guessed the resources shown in the response are generated on-the-fly from database metadata. Metadata provides a description of data. For example information about the tables, columns and relations in a database. Every kind of resource correspondends to a table in the database. sqlREST can be used with almost all database on condition there is a suitable JDBC driver. The meta data provided by the driver about the database is used by sqlREST to compute the response and to execute actions on server side.</p>
+    <p>As you might have guessed the resources shown in the response are generated on-the-fly from wsCatalog metadata. Metadata provides a description of data. For example information about the wsTables, wsColumns and relations in a wsCatalog. Every kind of resource correspondends to a table in the wsCatalog. sqlREST can be used with almost all wsCatalog on condition there is a suitable JDBC driver. The meta data provided by the driver about the wsCatalog is used by sqlREST to compute the response and to execute actions on server side.</p>
 
     <h3>List of invoices</h3>
 
@@ -79,7 +79,7 @@
 
     <code>http://localhost:8080/sqlrest/INVOICE/31/</code>
 
-    <p>The representation of an invoice entity is shown in picture 3. The details of the invoice contains an id, a total amount and an id of the customer the invoice belongs to. The element CUSTOMERID has an XLink reference to the refered customer. sqlREST uses the database meta data to create links to referenced resources.</p>
+    <p>The representation of an invoice entity is shown in picture 3. The details of the invoice contains an id, a total amount and an id of the customer the invoice belongs to. The element CUSTOMERID has an XLink reference to the refered customer. sqlREST uses the wsCatalog meta data to create links to referenced resources.</p>
 
     <img src="images/get-invoice.gif" alt="Representation of a customer"/><br/>
     <b>Picture 3.) </b>The representation of a customer<br/>
@@ -185,7 +185,7 @@ setDescription("BA4C");     // Will work also, but it is no description
 
      <h2>What to do next?</h2>
 
-     <p>You can connect sqlREST with your own database and build sample Web Services using the REST Style. All you have to do, is to configure a JDBC connection as described in the <a href="user-guide.htm">user guide</a>.</p>
+     <p>You can connect sqlREST with your own wsCatalog and build sample Web Services using the REST Style. All you have to do, is to configure a JDBC connection as described in the <a href="user-guide.htm">user guide</a>.</p>
 
     <b>Enjoy sqlREST!</b>
     <br/><br/>

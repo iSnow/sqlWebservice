@@ -8,31 +8,18 @@ routes:
     children:
       - path: ''
         components:
-          default: HelloWorld
+          default: DefaultView
           barchart: Barchart
+    props:
+      maincontent: true
+      connections: true
 
-  - path: "/connection/:id"
-    name: Connection
+  - path: "/inspector/table/:table/row/:id"
+    name: Dataset
     components:
-      maincontent: SQLEditorLayout
+      maincontent: DynamicConfigurableComponent
       connections: ConnectionInfo
-    children:
-      - path: ''
-        components:
-          default: HelloWorld
-          barchart: Barchart
+    props:
+      maincontent: true
+      connections: true
 
-  - path: "/schema/:id"
-    name: Schema
-    components:
-      maincontent: SQLEditorLayout
-      connections: ConnectionInfo
-    children:
-      - path: ''
-        components:
-          default: HelloWorld
-          barchart: Barchart
-
-  - path: "/connections"
-    name: Connections
-    component: ConnectionInfo

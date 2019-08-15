@@ -18,3 +18,6 @@ internalStoreConfig:
 application:
   verbose: true
   routeConfig: /home/snow/Projects/cryptocoins/router-config.yml
+
+files:
+  tableConfig: /home/snow/Projects/cryptocoins/table-config/

@@ -16,4 +16,6 @@ public class SqlRestConfiguration {
     ConnectionConfig internalStoreConfig;
 
     Map<String, Object> application;
+
+    Map<String, Object> files;
  }

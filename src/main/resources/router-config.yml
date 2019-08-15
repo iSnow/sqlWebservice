@@ -4,36 +4,78 @@ routes:
     name: Home
     components:
       maincontent: SQLEditorLayout
-      connections: ConnectionInfo
+      connections: SchemaSelect
     children:
       - path: ''
         components:
-          default: HelloWorld
+          default: DefaultView
           barchart: Barchart
+
+  - path: "/connections"
+    name: Connections
+    components:
+      default: SchemaSelect
 
   - path: "/connection/:id"
     name: Connection
     components:
       maincontent: SQLEditorLayout
-      connections: ConnectionInfo
-    children:
-      - path: ''
-        components:
-          default: HelloWorld
-          barchart: Barchart
+      connections: SchemaSelect
+    props:
+      maincontent: true
+      connections: true
 
   - path: "/schema/:id"
     name: Schema
     components:
       maincontent: SQLEditorLayout
-      connections: ConnectionInfo
-    children:
-      - path: ''
-        components:
-          default: HelloWorld
-          barchart: Barchart
+      connections: SchemaSelect
+      tables: TableSelect
+    props:
+      maincontent: true
+      connections: true
+      tables: true
 
-  - path: "/connections"
-    name: Connections
-    component: ConnectionInfo
+  - path: "/schema/:schema/table/:table"
+    name: Schema
+    components:
+      maincontent: SQLEditorLayout
+      connections: SchemaSelect
+    props:
+      maincontent: true
+      connections: true
 
+  - path: "/table/:id"
+    name: Table
+    components:
+      maincontent: SQLEditorLayout
+      connections: SchemaSelect
+    props:
+      maincontent: true
+      connections: true
+
+  - path: "/inspector/schema/:schema/table/:table/pk/:pk+"
+    name: Dataset
+    meta:
+      viewProperties:
+        tableRow: object
+        tableModel: object
+        selfLink: string
+      layoutRoutes:
+        layout-0:
+          url: /api/v1/data/schema/:schema/table/:table/pk/:pk
+          method: GET
+          parameters:
+            schema: routeProperties.schema
+            table: routeProperties.table
+            pk: routeProperties.pk
+          query:
+            format: 'object'
+            depth:  '1'
+
+    components:
+      maincontent: DynamicConfigurableComponent
+      connections: SchemaSelect
+    props:
+      maincontent: true
+      connections: true

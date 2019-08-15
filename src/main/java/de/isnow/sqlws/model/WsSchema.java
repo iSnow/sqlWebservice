@@ -70,6 +70,7 @@ public class WsSchema extends WsObject{
     public Collection<WsTable> getTables() {
         Set<WsTable> tables = new TreeSet<>();
         for (Table t : owningCatalog.catalog.getTables(schema)) {
+            //if (!WsTable.get())
             tables.add(new WsTable(t, this));
         }
         return tables;
