@@ -1,0 +1,25 @@
+---
+routes:
+  - path: "/"
+    name: Home
+    components:
+      maincontent: SQLEditorLayout
+      connections: ConnectionInfo
+    children:
+      - path: ''
+        components:
+          default: DefaultView
+          barchart: Barchart
+    props:
+      maincontent: true
+      connections: true
+
+  - path: "/inspector/table/:table/row/:id"
+    name: Dataset
+    components:
+      maincontent: DynamicConfigurableComponent
+      connections: ConnectionInfo
+    props:
+      maincontent: true
+      connections: true
+

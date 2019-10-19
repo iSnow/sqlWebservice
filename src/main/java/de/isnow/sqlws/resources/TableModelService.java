@@ -1,22 +1,13 @@
 package de.isnow.sqlws.resources;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import de.isnow.sqlws.model.WsColumn;
 import de.isnow.sqlws.model.WsTable;
 import de.isnow.sqlws.model.WsSchema;
-import de.isnow.sqlws.model.viewModel.VmColumn;
-import de.isnow.sqlws.model.viewModel.VmTable;
+import de.isnow.sqlws.model.viewModel.VmRecord;
 import de.isnow.sqlws.util.RestUtils;
 
 @Produces(MediaType.APPLICATION_JSON)
@@ -29,29 +20,10 @@ public class TableModelService {
 			@PathParam("id") String tableId) {
 
 		WsTable wst = WsTable.get(tableId);
+		VmRecord vmt = VmRecord.fromWsTable(wst, null, 1,true);
 
-		VmTable vmt = new VmTable();
-		Set<VmColumn> cols = new HashSet<>();
-		int cnt = 0;
-		if (null != wst.getColumns()) {
-			for (WsColumn c : wst.getColumns()) {
-				VmColumn col = new VmColumn();
-				col.setName(c.getName());
-				col.setFullName(c.getFullName());
-				//if ((c.isPrimaryKey()) || (c.isForeignKey())) {
-				if (c.isForeignKey()) {
-					col.setVisible(false);
-				} else {
-					col.setPosition(cnt++);
-				}
-				cols.add(col);
-			}
-		};
-		vmt.setColumns(cols);
-
-		Map<String, Object> response = RestUtils.createJsonWrapper(wst);
+		Map<String, Object> response = RestUtils.createJsonWrapper(vmt);
 		response.put("id", tableId);
-		response.put("model", vmt);
 		return response;
 	}
 

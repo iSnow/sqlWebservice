@@ -6,3 +6,14 @@ logging:
 # the only required property is resourcePackage, for more config options see below
 swagger:
   resourcePackage: de.isnow.sqlws.resources
+
+server:
+  gzip:
+    bufferSize: 32Kib
+    enabled: true
+  applicationConnectors:
+  - type: http
+    port: 8899
+  adminConnectors:
+  - type: http
+    port: 8890

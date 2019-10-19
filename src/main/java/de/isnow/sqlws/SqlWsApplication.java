@@ -10,22 +10,26 @@ import javax.servlet.FilterRegistration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
+
 import de.isnow.sqlws.db.WsPersistenceUnitInfo;
 import de.isnow.sqlws.model.WsConnection;
 import de.isnow.sqlws.model.config.ConnectionConfig;
 import de.isnow.sqlws.model.config.SqlRestConfiguration;
 import de.isnow.sqlws.model.config.SqlRestConfigurationConnection;
 import de.isnow.sqlws.resources.ObjectMapperContextResolver;
-import io.dropwizard.assets.AssetsBundle;
+import io.dropwizard.forms.MultiPartBundle;
 import org.eclipse.jetty.servlets.CrossOriginFilter;
 import org.glassfish.jersey.linking.DeclarativeLinkingFeature;
 
 import io.dropwizard.Application;
+import io.dropwizard.assets.AssetsBundle;
 import io.dropwizard.configuration.ResourceConfigurationSourceProvider;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import io.federecio.dropwizard.swagger.SwaggerBundle;
 import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
+import lombok.Getter;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.jpa.HibernatePersistenceProvider;
 import schemacrawler.schemacrawler.*;
@@ -34,9 +38,8 @@ import schemacrawler.schemacrawler.*;
 public class SqlWsApplication extends Application<SqlWsConfiguration> {
 	private BundleInitializer initializer;
 
-	/*@Getter
-	@Setter
-	private static Connection conn;*/
+	@Getter
+	private static SqlRestConfiguration sqlRestConfig;
 
 	// for external configuration, remove the second arg
 	public static void main(final String[] args) throws Exception {
@@ -69,6 +72,7 @@ public class SqlWsApplication extends Application<SqlWsConfiguration> {
 		});
 		// this path is also configured as assetsRoot in index.js for the NodeJS-based Javascript build tools
 		bootstrap.addBundle(new AssetsBundle("/assets/sqlWebserv/dist", "/", "index.html"));
+		bootstrap.addBundle(new MultiPartBundle());
 	}
 
 	
@@ -122,21 +126,21 @@ public class SqlWsApplication extends Application<SqlWsConfiguration> {
 		init(); 
 	}
 
+	@SneakyThrows
+	private static SqlRestConfiguration getConnectionConfig(ClassLoader classLoader) {
+		ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+		InputStream in = classLoader.getResourceAsStream("sqlrestconf.yml");
+		SqlRestConfiguration sqlRestConfig = mapper.readValue(in, SqlRestConfiguration.class);
+		return sqlRestConfig;
+	}
+
 	public void init()  {
 		try {
 			SchemaCrawlerOptions options = configureOptions();
-			ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-			SqlRestConfiguration sqlRestConfig=null;
 			ConnectionConfig config = null;
-			try {
-				ClassLoader classLoader = getClass().getClassLoader();
-				InputStream in = classLoader.getResourceAsStream("sqlrestconf.yml");
-				sqlRestConfig = mapper.readValue(in, SqlRestConfiguration.class);
-				config = sqlRestConfig.getConnectionConfig();
-			} catch (Exception e) {
-				e.printStackTrace();
-				System.exit(-1);
-			}
+			ClassLoader classLoader = getClass().getClassLoader();
+			sqlRestConfig = getConnectionConfig(classLoader);
+			config = sqlRestConfig.getConnectionConfig();
 			new SqlRestConfigurationConnection(sqlRestConfig.getInternalStoreConfig());
 
 			Properties props = new Properties();
@@ -165,12 +169,16 @@ public class SqlWsApplication extends Application<SqlWsConfiguration> {
 	}
 
 
+	// Create the options
 	SchemaCrawlerOptions configureOptions() {
-		// Create the options
-		final SchemaCrawlerOptions options = SchemaCrawlerOptionsBuilder.withMaximumSchemaInfoLevel();
-		// 	withSchemaInfoLevel(SchemaInfoLevel schemaInfoLevel)
+
 		// Set what details are required in the schema - this affects the
 		// time taken to crawl the schema
+		SchemaInfoLevel detailLevel = SchemaInfoLevelBuilder.maximum();
+		SchemaCrawlerOptionsBuilder bldr = SchemaCrawlerOptionsBuilder.builder();
+		final SchemaCrawlerOptions options = bldr
+				.withSchemaInfoLevel(detailLevel)
+				.toOptions();
         //options.setSchemaInfoLevel(SchemaCrawlerOptionsBuilder.withMaximumSchemaInfoLevel());
 		//options.setRoutineInclusionRule(new ExcludeAll());
 		//options.setSchemaInclusionRule(new RegularExpressionInclusionRule("PUBLIC.BOOKS"));
