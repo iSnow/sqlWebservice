@@ -10,7 +10,6 @@ import javax.servlet.FilterRegistration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
-
 import de.isnow.sqlws.db.WsPersistenceUnitInfo;
 import de.isnow.sqlws.model.WsConnection;
 import de.isnow.sqlws.model.config.ConnectionConfig;
@@ -169,16 +168,13 @@ public class SqlWsApplication extends Application<SqlWsConfiguration> {
 	}
 
 
-	// Create the options
 	SchemaCrawlerOptions configureOptions() {
-
-		// Set what details are required in the schema - this affects the
-		// time taken to crawl the schema
-		SchemaInfoLevel detailLevel = SchemaInfoLevelBuilder.maximum();
-		SchemaCrawlerOptionsBuilder bldr = SchemaCrawlerOptionsBuilder.builder();
-		final SchemaCrawlerOptions options = bldr
-				.withSchemaInfoLevel(detailLevel)
+		// Create the options
+		final SchemaCrawlerOptions options = SchemaCrawlerOptionsBuilder
+				.builder()
+				.withSchemaInfoLevel(SchemaInfoLevelBuilder.maximum())
 				.toOptions();
+
         //options.setSchemaInfoLevel(SchemaCrawlerOptionsBuilder.withMaximumSchemaInfoLevel());
 		//options.setRoutineInclusionRule(new ExcludeAll());
 		//options.setSchemaInclusionRule(new RegularExpressionInclusionRule("PUBLIC.BOOKS"));
